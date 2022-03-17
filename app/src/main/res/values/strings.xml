@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SmartDocs</string>
+    <string name="login">accedi</string>
+    <string name="email">email</string>
+    <string name="password">password</string>
+    <string name="forgot_password">password dimenticata?</string>
+    <string name="login_error">errore di login</string>
+
 </resources>

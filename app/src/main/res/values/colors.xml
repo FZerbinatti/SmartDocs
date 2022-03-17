@@ -1,10 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#03A9F4</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#001238</color>
+
+    <color name="toolbar_icons_color">#DEEDFF</color>
+    <color name="background">#021C52</color>
+    <color name="background_darker">#000745</color>
+    <color name="background_opaque1">#90021C52</color>
+
+    <color name="background_opaque">#99021C52</color>
+    <color name="tab_bar_icons_background">#809FC5</color>
+    <color name="textfields_background">#6087AEFF</color>
+    <color name="background_dark">#000A1E</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="opaque_white">#BFFFFFFF</color>
+    <color name="opaque_white25">#41FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="menu_background">#BFD1FF</color>
+    <color name="blue_light_opaque">#905FB8FA</color>
+    <color name="blue_light">#5FB8FA</color>
+    <color name="blue_dark">#1691F7</color>
+    <color name="menu_names">#195bdf</color>
+    <color name="league_name">#6A86A3</color>
+
+    //blue palette
+    <color name="b1">#edf2fb</color>
+    <color name="b2">#e2eafc</color>
+    <color name="b3">#d7e3fc</color>
+    <color name="b4">#ccdbfd</color>
+    <color name="b5">#c1d3fe</color>
+    <color name="b6">#b6ccfe</color>
+    <color name="b7">#abc4ff</color>
+
+
+    <color name="material_watergreen">#64FFDA</color>
+    <color name="material_lightgreen">#87FFA9</color>
+    <color name="material_green">#B2FF59</color>
+    <color name="material_green2">#3E89FF00</color>
+    <color name="material_yellow">#FFF59D</color>
+
+    <!-- fade greys -->
+    <color name="transparent">#00FFFFFF</color>
+    <color name="grey_opaque">#25939393</color>
+    <color name="light_gray">#8FA7A7A7</color>
+    <color name="light_grey">#B8B4B4</color>
+    <color name="dark_grey">#5F5F5F</color>
+    <color name="gray">#000000</color>
+    <color name="black_opaque">#A3000000</color>
+
+    <!-- fade tonality progressbar -->
+    <color name="r1">#FF0000</color>
+    <color name="r2">#FF7146</color>
+    <color name="y1">#FFB84D</color>
+    <color name="y2">#FDED59</color>
+    <color name="g1">#BDFF6F</color>
+    <color name="g2">#6BE871</color>
+    <color name="g3">#4CAF50</color>
+    <color name="material_red">#FD9890</color>
+
+
+    <!-- materials basic -->
+    <color name="sfum1">#eddcd2</color>
+    <color name="sfum2">#fff1e6</color>
+    <color name="sfum3">#fde2e4</color>
+    <color name="sfum4">#fad2e1</color>
+    <color name="sfum5">#c5dedd</color>
+    <color name="sfum6">#dbe7e4</color>
+    <color name="sfum7">#f0efeb</color>
+    <color name="sfum8">#d6e2e9</color>
+    <color name="sfum9">#bcd4e6</color>
+    <color name="sfum10">#99c1de</color>
+    <color name="sfum11">#d0d1ff</color>
+    <color name="sfum12">#ecbcfd</color>
+
+    <color name="purple_200">#9C27B0</color>
+    <color name="purple_500">#9C27B0</color>
+    <color name="purple_700">#7B1FA2</color>
+    <color name="teal_200">#80CBC4</color>
+    <color name="teal_700">#00796B</color>
+
+
+    <color name="bk_red">#850000</color>
+    <color name="bk_blue">#004780</color>
 </resources>
