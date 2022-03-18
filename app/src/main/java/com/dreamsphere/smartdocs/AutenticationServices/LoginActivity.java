@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,11 +49,13 @@ public class LoginActivity extends AppCompatActivity {
         login_progressbar = findViewById(R.id.login_progressbar);
         FirebaseApp.initializeApp(LoginActivity.this);
 
+        mAuth = FirebaseAuth.getInstance();
+
         forgot_password.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent intent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -83,6 +86,9 @@ public class LoginActivity extends AppCompatActivity {
                     mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
+
+                            Log.d(TAG, "onComplete: task? "+task.isSuccessful());
+                            Log.d(TAG, "onComplete: user? "+ firebaseUser);
                             if (task.isSuccessful() && (firebaseUser != null )){
 
                                 login_progressbar.setVisibility(View.GONE);
