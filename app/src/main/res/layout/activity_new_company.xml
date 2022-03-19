@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AutenticationServices.NewCompanyActivity">
+
+    <TextView
+        android:id="@+id/see_database"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/simplex"
+        android:text="@string/new_company"
+        android:textColor="@color/y2"
+        android:textSize="40sp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <EditText
+        android:id="@+id/edittext_company_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:background="@drawable/square_round_corners"
+        android:fontFamily="@font/simplex"
+        android:hint="@string/nome_azienda"
+        android:inputType="textEmailAddress"
+        android:paddingVertical="10dp"
+        android:layout_marginTop="40dp"
+        android:selectAllOnFocus="true"
+        android:textAlignment="center"
+        android:textColorHint="@color/white"
+        android:textSize="@dimen/edittext_dimension"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/see_database" />
+
+
+    <Button
+        android:id="@+id/button_new_company"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:background="@drawable/buttons_background_white_stroke"
+        android:enabled="true"
+        android:fontFamily="@font/simplex"
+        android:paddingHorizontal="20dp"
+        android:text="@string/generate"
+        android:layout_marginBottom="50dp"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

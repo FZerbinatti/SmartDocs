@@ -10,5 +10,40 @@
     <string name="enter_email">Inserisci un indirizzo email</string>
     <string name="error_reset">Errore dureante il reset della password</string>
     <string name="check_email">Controlla la tua mail per proseguire</string>
+    <string name="dot">.</string>
+
+    //firebase branches
+    <string name="firebase_users">Users</string>
+    <string name="firebase_Companies">Companies</string>
+    <string name="firebase_company">company</string>
+    <string name="firebase_username">username</string>
+    <string name="firebase_company_whitelist">email_whitelist</string>
+
+    //emails
+    <string name="email_object">Attivazione e Credenziali account SmartDocs</string>
+    <string name="email_body">Di seguito le credenziali del Suo account SmartDocs:</string>
+    <string name="email_end">Dalla pagina di Login cliccando su Reset Password può reimpostare la Password per maggiore sicurezza</string>
+    <string name="email_firma">Cordiali saluti, il team di SmartDocs</string>
+    <string name="registration">Registrazione</string>
+    <string name="whitelist_conditions">Contatta il tuo referente aziendale per avere la tua email nella whitelist della tua azienda</string>
+    <string name="generate">Genera</string>
+    <string name="genarate_account">genara_account</string>
+    <string name="company_selection">Seleziona Azeinda</string>
+    <string name="pool_email">pool email</string>
+    <string name="new_user_pool">New User Pool</string>
+    <string name="fill_fields">Completa tutti i campi richiesti!</string>
+    <string name="incorrect_password">Le password Inserite non corrispondono!</string>
+    <string name="password_short">La password deve contenere almeno 6 caratteri!</string>
+    <string name="invalid_email">Inserisci un account email valido!</string>
+    <string name="email_not_whitelisted">La tua email non risulta inserita nalla Whitelist aziendale, contatta il tuo referente per farla aggiungere alla Whitelist</string>
+    <string name="user_registerd">Utente generato correttamente, verrai portato al Login</string>
+    <string name="user_registration_fail">Errore di registrazione lato server</string>
+    <string name="nuovo_utente_pool">Nuova Pool di Utenti</string>
+    <string name="nuova_azienda">Nuova Azienda</string>
+    <string name="new_user">Registrazione nuovo Utente</string>
+    <string name="repeat_password">Ripeti Password</string>
+    <string name="new_company">New Company</string>
+    <string name="nome_azienda">nome azienda</string>
+    <string name="enter_portal">enter portal</string>
 
 </resources>

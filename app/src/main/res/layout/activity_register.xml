@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_grey"
+    tools:context=".AutenticationServices.RegisterActivity">
+
+    <TextView
+        android:id="@+id/see_database"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/simplex"
+        android:text="@string/registration"
+        android:textColor="@color/y2"
+        android:textSize="40sp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <EditText
+        android:id="@+id/edittext_user_email"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/square_round_corners"
+        android:fontFamily="@font/simplex"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
+        android:selectAllOnFocus="true"
+        android:textAlignment="center"
+        android:textColorHint="@color/white"
+        android:textSize="@dimen/edittext_dimension"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/see_database" />
+
+    <EditText
+        android:id="@+id/edittext_user_password"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/square_round_corners"
+        android:fontFamily="@font/simplex"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+        android:textAlignment="center"
+        android:textColorHint="@color/white"
+        android:textSize="@dimen/edittext_dimension"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edittext_user_email" />
+
+    <EditText
+        android:id="@+id/edittext_user_password_confirm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/square_round_corners"
+        android:fontFamily="@font/simplex"
+        android:hint="@string/repeat_password"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+        android:textAlignment="center"
+        android:textColorHint="@color/white"
+        android:textSize="@dimen/edittext_dimension"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edittext_user_password" />
+
+    <TextView
+        android:id="@+id/textview_nomeazienda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/simplex"
+        android:text="@string/company_selection"
+        android:textColor="@color/y2"
+        android:textSize="30sp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edittext_user_password_confirm" />
+
+
+
+    <Spinner
+        android:id="@+id/spinner_company_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="30dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview_nomeazienda" />
+
+    <TextView
+        android:id="@+id/textview_condizioni"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/simplex"
+        android:layout_marginHorizontal="20dp"
+        android:text="@string/whitelist_conditions"
+        android:textColor="@color/y2"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_company_list" />
+
+
+
+
+    <Button
+        android:id="@+id/button_new_user"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:background="@drawable/buttons_background_white_stroke"
+        android:enabled="true"
+        android:fontFamily="@font/simplex"
+        android:paddingHorizontal="20dp"
+        android:text="@string/genarate_account"
+        android:layout_marginBottom="50dp"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <ProgressBar
+        android:id="@+id/register_progressbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:indeterminateDrawable="@drawable/custom_progressbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
