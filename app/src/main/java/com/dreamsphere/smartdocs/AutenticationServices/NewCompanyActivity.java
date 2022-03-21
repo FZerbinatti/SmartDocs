@@ -3,6 +3,7 @@ package com.dreamsphere.smartdocs.AutenticationServices;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,9 +13,12 @@ import com.dreamsphere.smartdocs.Models.Company;
 import com.dreamsphere.smartdocs.R;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class NewCompanyActivity extends AppCompatActivity {
+
+    public static final String TAG ="NewCompanyActivity";
 
     EditText edittext_company_name;
     Button button_new_company;
@@ -31,12 +35,22 @@ public class NewCompanyActivity extends AppCompatActivity {
 
 
 
+
         button_new_company.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String company_name = edittext_company_name.getText().toString();
-                //crea nel database un'istanza di azienda vuota
 
+                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                Log.d(TAG, "onClick: firebaseUser: "+firebaseUser);
+
+                //Inserisci il nome dell'azienda nel rack delle aziende
+                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
+                        .child(company_name)
+                        .child(getString(R.string.firebase_whitelist))
+                        .setValue(" ");
+
+                //crea nel database un'istanza di azienda vuota
                 Company company = new Company(" ",company_name," "," "," "," "," "," ");
                 FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
                         .child(company_name)

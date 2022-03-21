@@ -62,7 +62,7 @@ public class NewUsersPool extends AppCompatActivity {
                     String selected_company = dropdown.getSelectedItem().toString();
                     Log.d(TAG, "onClick: selceted company: "+selected_company);
 
-                    DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
+                    DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
                             .child(selected_company)
                             .child(getString(R.string.firebase_company_whitelist));
 
@@ -78,7 +78,7 @@ public class NewUsersPool extends AppCompatActivity {
 
                             if (current_whitelist!=null){
                                 Log.d(TAG, "onDataChange: not null");
-                                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
+                                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
                                         .child(selected_company)
                                         .child(getString(R.string.firebase_company_whitelist))
                                         .setValue(current_whitelist +" "+ emails2);
@@ -88,7 +88,7 @@ public class NewUsersPool extends AppCompatActivity {
                                 finish();
                             }else {
                                 Log.d(TAG, "onDataChange: data null");
-                                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
+                                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
                                         .child(selected_company)
                                         .child(getString(R.string.firebase_company_whitelist))
                                         .setValue(emails2);
@@ -120,7 +120,7 @@ public class NewUsersPool extends AppCompatActivity {
 
         ArrayList<String> arraylist_companies = new ArrayList<>();
         // load da firebase le regioni
-        DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies));
+        DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist));
         datareference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {

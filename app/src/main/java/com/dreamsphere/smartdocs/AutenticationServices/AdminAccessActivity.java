@@ -42,13 +42,13 @@ public class AdminAccessActivity extends AppCompatActivity {
 
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
                         .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .child(getString(R.string.firebase_company));
+                        .child(getString(R.string.firebase_user_code));
 
                 reference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                        if (edittext_enter_admin_password.getText().toString().equals(snapshot.getValue(String.class))){
+                        if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals("uRkhFRICIvYMH34kphI8y8mEzeh1")&&edittext_enter_admin_password.getText().toString().equals(snapshot.getValue(String.class))){
                             Toast.makeText(AdminAccessActivity.this, "Access Granted", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(AdminAccessActivity.this, AdminActivity.class);
                             startActivity(intent);

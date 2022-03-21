@@ -28,18 +28,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/go_to_admin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:padding="10dp"
-        android:text="@string/dot"
-        android:textColor="@color/light_gray"
-        android:textSize="16sp"
-        android:textStyle="italic"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/textview_project_name"
@@ -47,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/simplex"
-        android:text="@string/project_list"
+        android:text="@string/nome_progetto"
         android:textColor="@color/y2"
         android:textSize="35sp"
         android:gravity="start"
@@ -69,17 +58,34 @@
         app:layout_constraintTop_toBottomOf="@+id/textview_project_name">
 
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerview_projects"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:dividerHeight="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_projects"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:dividerHeight="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/button_new_project"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
+
+        <Button
+            android:id="@+id/button_new_project"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:background="@drawable/background_rounder_corners"
+            android:enabled="true"
+            android:fontFamily="@font/classicroman"
+            android:paddingHorizontal="15dp"
+            android:text="Nuovo Documento"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/constraintLayout2"
+            app:layout_constraintEnd_toEndOf="@+id/constraintLayout2"
+            app:layout_constraintStart_toStartOf="@+id/constraintLayout2" />
 
         <ProgressBar
             android:id="@+id/main_progressbar"
@@ -96,22 +102,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-    <Button
-        android:id="@+id/button_new_project"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:background="@drawable/background_rounder_corners"
-        android:enabled="true"
-        android:fontFamily="@font/classicroman"
-        android:padding="5dp"
-        android:paddingHorizontal="0dp"
-        android:text="+"
-        android:textAllCaps="false"
-        android:textColor="@color/black"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toBottomOf="@+id/constraintLayout2"
-        app:layout_constraintEnd_toEndOf="@+id/constraintLayout2" />
+
 
 
 

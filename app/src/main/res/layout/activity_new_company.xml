@@ -7,7 +7,7 @@
     tools:context=".AutenticationServices.NewCompanyActivity">
 
     <TextView
-        android:id="@+id/see_database"
+        android:id="@+id/textview_project_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/simplex"
@@ -37,7 +37,7 @@
         android:textSize="@dimen/edittext_dimension"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/see_database" />
+        app:layout_constraintTop_toBottomOf="@+id/textview_project_name" />
 
 
     <Button

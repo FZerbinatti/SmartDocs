@@ -14,9 +14,14 @@
 
     //firebase branches
     <string name="firebase_users">Users</string>
+    <string name="firebase_user_generalities">Generalities</string>
+    <string name="firebase_user_projects">Projects</string>
+    <string name="firebase_user_project_name">project_name</string>
+    <string name="firebase_whitelist">Whitelists</string>
     <string name="firebase_Companies">Companies</string>
     <string name="firebase_company">company</string>
     <string name="firebase_username">username</string>
+    <string name="firebase_user_code">user_code</string>
     <string name="firebase_company_whitelist">email_whitelist</string>
 
     //emails
@@ -27,7 +32,7 @@
     <string name="registration">Registrazione</string>
     <string name="whitelist_conditions">Contatta il tuo referente aziendale per avere la tua email nella whitelist della tua azienda</string>
     <string name="generate">Genera</string>
-    <string name="genarate_account">genara_account</string>
+    <string name="genarate_account">Genara Account</string>
     <string name="company_selection">Seleziona Azeinda</string>
     <string name="pool_email">pool email</string>
     <string name="new_user_pool">New User Pool</string>
@@ -45,5 +50,7 @@
     <string name="new_company">New Company</string>
     <string name="nome_azienda">nome azienda</string>
     <string name="enter_portal">enter portal</string>
+    <string name="project_list">Lista Progetti</string>
+    <string name="nome_progetto">Nome Progetto</string>
 
 </resources>

@@ -84,7 +84,7 @@ public class RegisterActivity extends AppCompatActivity {
                     edittext_user_email.requestFocus();
                 } else {
                     //query per verificare se la mail è in whitelist
-                    DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
+                    DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
                             .child(selected_company)
                             .child(getResources().getString(R.string.firebase_company_whitelist));
 
@@ -102,14 +102,20 @@ public class RegisterActivity extends AppCompatActivity {
 
                             User user = new User(email, selected_company);
 
-                            FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
-                                    .child(selected_company)
+                            FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
+                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child(getString(R.string.firebase_user_generalities))
                                     .setValue(user).addOnCompleteListener(task1 -> {
                                 if (task1.isSuccessful()) {
                                     Toast.makeText(RegisterActivity.this, getResources().getString(R.string.user_registerd), Toast.LENGTH_SHORT).show();
 
+
+
                                     register_progressbar.setVisibility(View.GONE);
+
+
                                     Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+
                                     startActivity(intent);
                                     finish();
 
@@ -137,23 +143,17 @@ public class RegisterActivity extends AppCompatActivity {
 
                         }
                     });
-
-
                 }
             }
         });
-
-
-
-
-
     }
 
     private void loadDatabaseCompanies() {
+        Log.d(TAG, "loadDatabaseCompanies: ");
 
         ArrayList<String> arraylist_companies = new ArrayList<>();
         // load da firebase le regioni
-        DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies));
+        DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist));
         datareference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
