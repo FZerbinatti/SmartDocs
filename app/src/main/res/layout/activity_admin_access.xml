@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/grey_opaque"
-    tools:context=".AutenticationServices.AdminAccessActivity">
+    tools:context=".AdminActivities.AdminAccessActivity">
 
     <EditText
         android:id="@+id/edittext_enter_admin_password"

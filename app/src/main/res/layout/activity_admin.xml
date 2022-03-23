@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AutenticationServices.AdminActivity">
+    tools:context=".AdminActivities.AdminActivity">
 
 
     <Button
@@ -21,7 +21,6 @@
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/button_new_user"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,10 +36,26 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/button_new_company_docuemnt"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_new_company" />
+
+    <Button
+        android:id="@+id/button_new_company_docuemnt"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:background="@drawable/buttons_background_white_stroke"
+        android:enabled="true"
+        android:fontFamily="@font/simplex"
+        android:paddingHorizontal="20dp"
+        android:text="@string/nuovo_documento"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_new_user" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

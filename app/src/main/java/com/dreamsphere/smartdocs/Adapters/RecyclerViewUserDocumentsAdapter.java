@@ -1,26 +1,26 @@
 package com.dreamsphere.smartdocs.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamsphere.smartdocs.R;
 
 import java.util.List;
 
-public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
+public class RecyclerViewUserDocumentsAdapter extends RecyclerView.Adapter<RecyclerViewUserDocumentsAdapter.ViewHolder> {
 
     private List<String> mData;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    public MyRecyclerViewAdapter(Context context, List<String> data) {
+    public RecyclerViewUserDocumentsAdapter(Context context, List<String> data, String user_company) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -29,6 +29,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.project_picker_item, parent, false);
+
         return new ViewHolder(view);
     }
 
@@ -70,6 +71,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
     // allows clicks events to be caught
     void setClickListener(ItemClickListener itemClickListener) {
+        Log.d("TAG", "setClickListener: dioc");
         this.mClickListener = itemClickListener;
     }
 

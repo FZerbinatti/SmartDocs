@@ -1,4 +1,4 @@
-package com.dreamsphere.smartdocs.AutenticationServices;
+package com.dreamsphere.smartdocs.AdminActivities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

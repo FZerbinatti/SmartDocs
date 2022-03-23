@@ -9,14 +9,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".Activities.SettingsActivity"></activity>
+        <activity android:name=".Activities.SelectDocumentActivity"></activity>
+        <activity android:name=".Activities.SelectDocumentTypeActivity"></activity>
+        <activity android:name=".AdminActivities.NewCompanyDocumentActivity" />
+        <activity android:name=".Activities.ProjectActivity" />
+        <activity android:name=".Documents.Sicurstudio_PrimoSopralluogo" />
+        <activity android:name=".Activities.SettingsActivity" />
         <activity android:name=".AutenticationServices.RegisterActivity" />
-        <activity android:name=".AutenticationServices.NewUsersPool" />
-        <activity android:name=".AutenticationServices.NewCompanyActivity" />
-        <activity android:name=".AutenticationServices.AdminActivity" />
-        <activity android:name=".AutenticationServices.AdminAccessActivity" />
+        <activity android:name=".AdminActivities.NewUsersPool" />
+        <activity android:name=".AdminActivities.NewCompanyActivity" />
+        <activity android:name=".AdminActivities.AdminActivity" />
+        <activity android:name=".AdminActivities.AdminAccessActivity" />
         <activity android:name=".AutenticationServices.ResetPasswordActivity" />
-        <activity android:name=".AutenticationServices.LoginActivity"></activity>
+        <activity android:name=".AutenticationServices.LoginActivity" />
         <activity android:name=".Activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

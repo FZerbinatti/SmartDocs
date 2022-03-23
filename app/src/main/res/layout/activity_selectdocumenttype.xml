@@ -13,10 +13,12 @@
         android:background="@color/b6"
         android:scaleType="centerCrop"
         android:src="@drawable/background_sky2"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
+<!--    <ImageButton
         android:id="@+id/settings_button"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -26,19 +28,19 @@
         android:scaleType="centerCrop"
         android:src="@drawable/ic_settings"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />-->
 
     <TextView
-        android:id="@+id/textview_project_name"
+        android:id="@+id/textview_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/simplex"
-        android:text="@string/nome_progetto"
+        android:text="@string/scegli_tipologia_documento"
         android:textColor="@color/y2"
         android:textSize="30sp"
-        app:layout_constraintEnd_toStartOf="@+id/settings_button"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/imageView" />
 
@@ -53,23 +55,22 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textview_project_name">
+        app:layout_constraintTop_toBottomOf="@+id/textview_title">
 
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerview_documents"
+            android:id="@+id/recyclerview_company_documents"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="10dp"
+            android:layout_height="match_parent"
             android:dividerHeight="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/button_add_document"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
 
-        <Button
-            android:id="@+id/button_add_document"
+<!--        <Button
+            android:id="@+id/button_new_document"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="0dp"
@@ -83,7 +84,7 @@
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="@+id/constraintLayout2"
             app:layout_constraintEnd_toEndOf="@+id/constraintLayout2"
-            app:layout_constraintStart_toStartOf="@+id/constraintLayout2" />
+            app:layout_constraintStart_toStartOf="@+id/constraintLayout2" />-->
 
         <ProgressBar
             android:id="@+id/main_progressbar"

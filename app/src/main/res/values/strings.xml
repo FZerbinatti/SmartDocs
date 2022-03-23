@@ -16,12 +16,15 @@
     <string name="firebase_users">Users</string>
     <string name="firebase_user_generalities">Generalities</string>
     <string name="firebase_user_projects">Projects</string>
+    <string name="firebase_user_documents">Documents</string>
     <string name="firebase_user_project_name">project_name</string>
     <string name="firebase_whitelist">Whitelists</string>
     <string name="firebase_Companies">Companies</string>
     <string name="firebase_company">company</string>
+    <string name="firebase_company_documents">company_documents</string>
     <string name="firebase_username">username</string>
     <string name="firebase_user_code">user_code</string>
+    <string name="firebase_user_company">user_company</string>
     <string name="firebase_company_whitelist">email_whitelist</string>
 
     //emails
@@ -52,5 +55,19 @@
     <string name="enter_portal">enter portal</string>
     <string name="project_list">Lista Progetti</string>
     <string name="nome_progetto">Nome Progetto</string>
+    <string name="preferences_user_company">user_company</string>
+    <string name="nuovo_documento">Nuovo Docuemnto Aziendale</string>
+    <string name="document_type">Tipologia Documento</string>
+    <string name="nod_doc_or_type">No document name or Docuemtn type inserted</string>
+    <string name="scegli_documento">Scegli Documento</string>
+    <string name="scegli_tipologia_documento">Seleziona Tipologia Documento</string>
+
+    <string name="extra_project_name">PROJECT_NAME</string>
+    <string name="extra_user_company">USER_COMPANY</string>
+    <string name="extra_document_type">DOCUMENT_TYPE</string>
+    <string name="confermare">Confermare</string>
+    <string name="alert_dialog_1">Inserire il documento \'\'</string>
+    <string name="alert_dialog_2">\'\' nel progetto \'\'</string>
+
 
 </resources>

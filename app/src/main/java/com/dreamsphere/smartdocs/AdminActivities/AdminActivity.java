@@ -1,4 +1,4 @@
-package com.dreamsphere.smartdocs.AutenticationServices;
+package com.dreamsphere.smartdocs.AdminActivities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,7 +11,7 @@ import com.dreamsphere.smartdocs.R;
 
 public class AdminActivity extends AppCompatActivity {
 
-    Button new_user, new_company;
+    Button new_user, new_company, button_new_company_docuemnt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,7 @@ public class AdminActivity extends AppCompatActivity {
 
         new_user = findViewById(R.id.button_new_user);
         new_company= findViewById(R.id.button_new_company);
+        button_new_company_docuemnt= findViewById(R.id.button_new_company_docuemnt);
 
         new_user.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,7 +38,12 @@ public class AdminActivity extends AppCompatActivity {
             }
         });
 
-
-
+        button_new_company_docuemnt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent= new Intent(AdminActivity.this,  NewCompanyDocumentActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

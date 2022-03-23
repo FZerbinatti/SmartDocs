@@ -1,5 +1,7 @@
 package com.dreamsphere.smartdocs.Models;
 
+import java.util.ArrayList;
+
 public class Company {
 
     String company_whitelist;
@@ -10,11 +12,12 @@ public class Company {
     String company_PIVA;
     String company_data;
     String company_name_full;
+    ArrayList<Document> company_documents;
 
     public Company() {
     }
 
-    public Company(String company_whitelist, String company_name, String company_logo, String company_address, String company_number, String company_PIVA, String company_data, String company_name_full) {
+    public Company(String company_whitelist, String company_name, String company_logo, String company_address, String company_number, String company_PIVA, String company_data, String company_name_full, ArrayList<Document> company_documents) {
         this.company_whitelist = company_whitelist;
         this.company_name = company_name;
         this.company_logo = company_logo;
@@ -23,6 +26,7 @@ public class Company {
         this.company_PIVA = company_PIVA;
         this.company_data = company_data;
         this.company_name_full = company_name_full;
+        this.company_documents = company_documents;
     }
 
     public String getCompany_name() {
@@ -87,5 +91,13 @@ public class Company {
 
     public void setCompany_whitelist(String company_whitelist) {
         this.company_whitelist = company_whitelist;
+    }
+
+    public ArrayList<Document> getCompany_documents() {
+        return company_documents;
+    }
+
+    public void setCompany_documents(ArrayList<Document> company_documents) {
+        this.company_documents = company_documents;
     }
 }

@@ -1,28 +1,20 @@
 package com.dreamsphere.smartdocs.Activities;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dreamsphere.smartdocs.Adapters.MyRecyclerViewAdapter;
-import com.dreamsphere.smartdocs.AutenticationServices.AdminAccessActivity;
-import com.dreamsphere.smartdocs.AutenticationServices.LoginActivity;
+import com.dreamsphere.smartdocs.Adapters.RecyclerViewUserDocumentsAdapter;
 import com.dreamsphere.smartdocs.R;
-import com.dreamsphere.smartdocs.Services.PreferencesData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -36,41 +28,47 @@ import java.util.ArrayList;
 public class ProjectActivity extends AppCompatActivity {
     public static final String TAG ="Main Activity";
 
-    TextView go_to_admin;
+    TextView go_to_admin, textview_project_name;
     Integer counter;
     ImageButton settings_button;
-    Button button_new_project;
+    Button button_add_document;
     Context context;
-    RecyclerView recyclerview_projects;
+    RecyclerView recyclerview_documents;
     ProgressBar main_progressbar;
     private FirebaseUser user;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference reference;
-    private String userID;
+    private String userID, project_name;
     ArrayList<String> user_projects;
-    MyRecyclerViewAdapter adapter;
+    RecyclerViewUserDocumentsAdapter adapter;
+    String user_company;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project);
 
-        go_to_admin=findViewById(R.id.go_to_admin);
         settings_button = findViewById(R.id.settings_button);
-        button_new_project = findViewById(R.id.button_new_project);
-        recyclerview_projects = findViewById(R.id.recyclerview_projects);
+        button_add_document = findViewById(R.id.button_add_document);
+        recyclerview_documents = findViewById(R.id.recyclerview_documents);
         main_progressbar = findViewById(R.id.main_progressbar);
+        textview_project_name= findViewById(R.id.textview_project_name);
 
+        //ottieni il nome del progetto corrente dall'activity precendente e settalo come titolo
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            project_name = extras.getString(getString(R.string.extra_project_name));
+            textview_project_name.setText(project_name);
+            //dopo che hai ricevuto le info sul progetto, corrente, carica i documenti relativi a questo progetto dell'utente
+            user_company = extras.getString(getString(R.string.firebase_user_company));
+            loadUserDocuments();
+        }
 
         main_progressbar.setVisibility(View.VISIBLE);
-        counter =0;
         context = this;
         user = FirebaseAuth.getInstance().getCurrentUser();
         reference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users));
         userID = user.getUid();
-
-        //Controlla se lo user è dentro l'app, se non è loggato, torna alla pagina di login
-        isUserAlreadyLogged();
 
 
         settings_button.setOnClickListener(new View.OnClickListener() {
@@ -81,64 +79,30 @@ public class ProjectActivity extends AppCompatActivity {
             }
         });
 
-        loadRecyclerView();
-
-        goToAdmin();
+        //load dei documenti di questo user di questo progetto
 
 
-        addProject();
+        //pulsante per aggiungere un nuovo documento
+        addDocument();
 
     }
 
-    private void addProject() {
+    private void addDocument() {
 
-        button_new_project.setOnClickListener(new View.OnClickListener() {
+        button_add_document.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                final EditText edittext = new EditText(context);
-                alert.setTitle("Nuovo Progetto");
-                alert.setMessage("Inserisci nome del Progetto");
-
-
-                alert.setView(edittext);
-
-                alert.setPositiveButton("Aggiungi", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        String projectName = edittext.getText().toString();
-                        //se lo user clicca su aggiungi, adda il progetto al suo firebase nella sezione Users/UserID/Projects
-                        FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
-                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                .child(getString(R.string.firebase_user_projects))
-                                .child(projectName)
-                                .child(getString(R.string.firebase_user_project_name))
-                                .setValue(projectName);
-
-                        Intent intent = new Intent(ProjectActivity.this, ProjectActivity.class);
-                        startActivity(intent);
-                        finish();
-
-
-                    }
-                });
-
-                alert.setNegativeButton("Annulla", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // what ever you want to do with No option.
-                    }
-                });
-
-                alert.show();
+                //apri un'activity dove viene visualizzata una lista con i documenti accessibili a questo utente
+                Intent intent = new Intent(ProjectActivity.this, SelectDocumentTypeActivity.class);
+                intent.putExtra(getString(R.string.extra_project_name),project_name);
+                startActivity(intent);
             }
         });
-
-
-
     }
 
-    private void loadRecyclerView() {
+    private void loadUserDocuments() {
         //load della listview
-        ArrayList<String> all_user_projects = new ArrayList<>();
+        ArrayList<String> all_user_documents = new ArrayList<>();
 
         // load da firebase le regioni
         DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
@@ -149,10 +113,10 @@ public class ProjectActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    String regionName = snapshot.getKey().toString();
-                    all_user_projects.add(regionName);
+                    String user_document = snapshot.getKey().toString();
+                    all_user_documents.add(user_document);
                 }
-                loadListviewRegions(all_user_projects);
+                loadRecyclerviewDocuments(all_user_documents);
             }
 
             @Override
@@ -161,55 +125,16 @@ public class ProjectActivity extends AppCompatActivity {
         });
     }
 
-
-    private void loadListviewRegions(ArrayList<String> all_regions) {
+    private void loadRecyclerviewDocuments(ArrayList<String> all_regions) {
 
         // set up the RecyclerView
-
-        recyclerview_projects.setLayoutManager(new LinearLayoutManager(this));
+        recyclerview_documents.setLayoutManager(new LinearLayoutManager(this));
         //adapter = new RecyclerView.Adapter<>(getApplicationContext(), all_regions);
-        adapter = new MyRecyclerViewAdapter(context, all_regions);
-        recyclerview_projects.setAdapter(adapter);
-
+        adapter = new RecyclerViewUserDocumentsAdapter(context, all_regions, user_company);
+        recyclerview_documents.setAdapter(adapter);
         main_progressbar.setVisibility(View.GONE);
 
-
     }
 
-    private void goToAdmin() {
 
-        go_to_admin.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "onTouch: touched");
-                counter++;
-                counter++;
-                Log.d(TAG, "onTouch: counter: "+counter);
-                if (counter==10){
-                    Log.d(TAG, "onTouch: counter 3");
-                    Intent intent = new Intent(ProjectActivity.this, AdminAccessActivity.class);
-                    startActivity(intent);
-                }
-                return false;
-            }
-        });
-
-    }
-
-    private void isUserAlreadyLogged() {
-
-         //PreferencesData.setUserLoggedInStatus(getApplicationContext(),false);
-        Log.d(TAG, "isUserAlreadyLogged: "+ PreferencesData.getUserLoggedInStatus(this));
-        if ( !PreferencesData.getUserLoggedInStatus(this) ||   FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())  ==null ) {
-            Intent intent = new Intent(ProjectActivity.this, LoginActivity.class);
-            startActivity(intent);
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        moveTaskToBack(true);
-    }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Documents.Sicurstudio_PrimoSopralluogo">
+
+    <TextView
+        android:id="@+id/create_pdf"
+        android:layout_width="wrap_content"
+        android:paddingHorizontal="15sp"
+        android:paddingVertical="10sp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:background="@drawable/buttons_background_white_stroke_small"
+        android:gravity="center"
+        android:text="Generate PDF"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="1:1"
+        android:src="@drawable/background_sky"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toBottomOf="@+id/worksite_name" />
+
+    <EditText
+        android:id="@+id/worksite_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="worksite name"
+        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

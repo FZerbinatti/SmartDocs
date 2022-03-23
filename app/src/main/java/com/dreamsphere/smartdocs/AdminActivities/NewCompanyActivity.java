@@ -1,4 +1,4 @@
-package com.dreamsphere.smartdocs.AutenticationServices;
+package com.dreamsphere.smartdocs.AdminActivities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,11 +10,14 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dreamsphere.smartdocs.Models.Company;
+import com.dreamsphere.smartdocs.Models.Document;
 import com.dreamsphere.smartdocs.R;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.ArrayList;
 
 public class NewCompanyActivity extends AppCompatActivity {
 
@@ -51,7 +54,7 @@ public class NewCompanyActivity extends AppCompatActivity {
                         .setValue(" ");
 
                 //crea nel database un'istanza di azienda vuota
-                Company company = new Company(" ",company_name," "," "," "," "," "," ");
+                Company company = new Company(" ",company_name," "," "," "," "," "," ", new ArrayList<Document>());
                 FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
                         .child(company_name)
                         .setValue(company).addOnSuccessListener(new OnSuccessListener<Void>() {

@@ -3,7 +3,9 @@ package com.dreamsphere.smartdocs.AutenticationServices;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText login_email, login_password;
     ProgressBar login_progressbar;
     private FirebaseAuth mAuth;
+    Context context;
 
     private String TAG ="LoginActivity: ";
 
@@ -45,6 +48,8 @@ public class LoginActivity extends AppCompatActivity {
         login_password = findViewById(R.id.login_password);
         login_progressbar = findViewById(R.id.login_progressbar);
         registration_new_user = findViewById(R.id.registration_new_user);
+
+        context=this;
 
         FirebaseApp.initializeApp(LoginActivity.this);
 
@@ -104,6 +109,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                 login_progressbar.setVisibility(View.GONE);
                                 PreferencesData.setUserLoggedInStatus(getApplicationContext(),true);
+
                                 Intent intent = new Intent( LoginActivity.this, MainActivity.class);
                                 startActivity(intent);
                                 finish();
