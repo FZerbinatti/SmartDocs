@@ -2,31 +2,46 @@ package com.dreamsphere.smartdocs.Documents;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.Layout;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
+import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
+import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
 import com.dreamsphere.smartdocs.R;
 
 import java.io.File;
@@ -34,45 +49,211 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Objects;
 
-public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity {
+public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements View.OnLongClickListener, View.OnTouchListener{
+    public static final String TAG ="DocSPSActivity";
 
     Context context;
     TextView add_interest_point, create_pdf;
-    Integer interestPointNumber;
-    EditText worksite_name;
+    GPSTracker gps;
+    private static final int REQUEST = 112;
+    PinView2 imageview_map;
     Bitmap bitmap_map_image, scaledMapImage;
     Integer pageWidth = 1200;
+    private static int RESULT_LOAD_IMAGE = 1;
+
+    Float lastKnownX;
+    Float lastKnownY;
+    ArrayList mapPinsArrayList;
+    Integer pinCounter;
+    MapPin mapPin1;
+
+    Integer interestPointNumber;
+    ImageButton automatic_coordinates;
+    ImageButton button_upload;
+    EditText denominazione_opera, indirizzo_cantiere, coordinates_north, coordinates_est;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.document__sicurstudio__primosopralluogo);
 
-        create_pdf = findViewById(R.id.create_pdf);
-        worksite_name = findViewById(R.id.worksite_name);
         context=this;
         interestPointNumber=1;
+        pinCounter =0;
+        mapPinsArrayList = new ArrayList();
+
+        create_pdf = findViewById(R.id.create_pdf);
+        denominazione_opera = findViewById(R.id.denominazione_opera);
+        indirizzo_cantiere = findViewById(R.id.indirizzo_cantiere);
+        automatic_coordinates = findViewById(R.id.automatic_coordinates);
+        coordinates_north = findViewById(R.id.coordinates_north);
+        coordinates_est = findViewById(R.id.coordinates_est);
+        button_upload = findViewById(R.id.button_upload);
+        imageview_map = findViewById(R.id.imageview_map);
+
+        imageview_map.isLongClickable();
+        imageview_map.isClickable();
+        imageview_map.hasOnClickListeners();
+
+        ArrayList mapPins = new ArrayList();
+        imageview_map.setPins(mapPins);
+        imageview_map.setOnLongClickListener(this);
+        imageview_map.setOnTouchListener(this);
+
+        //add image to the image field
+        uploadImageview();
+
+        // get the coordinates GPS
+        buttonGetCoordinates();
+
+        // generate the pdf file after compiling it
+        buttonGeneratePDF();
+        
+    }
 
 
+    //metodi per il caricamento dell'immagine
+    private void  uploadImageview() {
 
-
-        create_pdf.setOnClickListener(new View.OnClickListener() {
+        button_upload.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.R)
             @Override
             public void onClick(View view) {
-                String string_worksite_name = worksite_name.getText().toString();
 
-                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
-                try {
-                    createPDF(string_worksite_name);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                if (Build.VERSION.SDK_INT >= 23) {
+                    String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                    if (!hasPermissions(context, PERMISSIONS)) {
+                        ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, REQUEST );
+                        Log.d(TAG, "onClick: 1");
+                    } else {
+                        Log.d(TAG, "onClick: 2");
+                        ImagePickAction();
+                    }
+                } else {
+                    Log.d(TAG, "onClick: 3");
+                    ImagePickAction();
+                }
+
+            }
+        });
+    }
+
+    public void ImagePickAction(){
+        Log.d(TAG, "ImagePickAction: 4");
+        Intent i = new Intent(
+                Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        
+
+        startActivityForResult(i, RESULT_LOAD_IMAGE);
+    }
+
+    private void pickImage() {
+        Log.d(TAG, "pickImage: 5");
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, 100);
+
+    }
+
+    //metodi per la geolocalizzazione
+    private void buttonGetCoordinates() {
+
+        automatic_coordinates.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (Build.VERSION.SDK_INT >= 23) {
+                    String[] PERMISSIONS = {android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION};
+                    if (!hasPermissions(context, PERMISSIONS)) {
+                        ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, REQUEST );
+                    } else {
+                        //call get location here
+                        location();
+                    }
+                } else {
+                    //call get location here
+                    location();
                 }
             }
         });
-
     }
+
+    public void location(){
+        gps = new GPSTracker(Sicurstudio_PrimoSopralluogo.this);
+        // Check if GPS enabled
+        if(gps.canGetLocation()) {
+
+            double latitude = gps.getLatitude();
+            double longitude = gps.getLongitude();
+
+            coordinates_north.setText("N: "+ String.valueOf(latitude));
+            coordinates_est.setText("E: "+ String.valueOf(longitude));
+            //Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+        } else {
+            // Can't get location.
+            // GPS or network is not enabled.
+            // Ask user to enable GPS/network in settings.
+            gps.showSettingsAlert();
+        }
+    }
+
+    // permessi e risultati per GPS e load image
+    private static boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100 && grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            pickImage();
+        }else if (requestCode == REQUEST){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //call get location here
+            } else {
+                Toast.makeText(context, "The app was not allowed to access your location", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: 6) requestCode:" +requestCode +" resultcode "+resultCode +" data: "+data);
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            Log.d(TAG, "onActivityResult: selectedImage: "+selectedImage);
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            Cursor cursor = getContentResolver().query(selectedImage,
+                    filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+            Log.d(TAG, "onActivityResult: picturePath: "+picturePath);
+
+
+            imageview_map.setImage(ImageSource.bitmap(BitmapFactory.decodeFile(picturePath)));
+        }else  if (requestCode == 100){
+            Log.d(TAG, "onActivityResult: result code 100");
+        }
+    }
+
+
 
     private void createPDF(String string_worksite_name) throws FileNotFoundException {
         String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
@@ -102,51 +283,80 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity {
         }
 
         document.close();
-
-
     }
 
-    private void checkPermissions() {
+    private void buttonGeneratePDF() {
 
-        int permsission = ActivityCompat.checkSelfPermission(Sicurstudio_PrimoSopralluogo.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
-            pickImage();
-        }else {
-            if (permsission != PackageManager.PERMISSION_DENIED){
-                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},100);
+        create_pdf.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String string_denominazione_opera = denominazione_opera.getText().toString();
+
+                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+                try {
+                    createPDF(string_denominazione_opera);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public boolean onLongClick(View view) {
+        if (view.getId() == R.id.imageview_map) {
+            Toast.makeText(this, "Long clicked "+lastKnownX+" "+lastKnownY, Toast.LENGTH_SHORT).show();
+
+            Float scale = imageview_map.getScale();
+            Float density = getResources().getDisplayMetrics().density;
+            Float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
+            Integer densityDPI = getResources().getDisplayMetrics().densityDpi;
+            Log.d(TAG, "onLongClick: image x: "+imageview_map.getX()+ " image y: "+imageview_map.getY());
+            Log.d(TAG, "onLongClick: pin number:"+pinCounter  + " / lastKnownX: "+lastKnownX +" / lastKnownY: "+lastKnownY );
+            Log.d(TAG, "onLongClick: scale: "+scale +" / density: "+density + " / scaledDensity: "+scaledDensity + " / densityDPI: "+densityDPI);
+
+
+
+
+            if (pinCounter ==12){
+                Toast.makeText(this, "Max number of Marker is 12!", Toast.LENGTH_SHORT).show();
             }else {
-                pickImage();
+                //mapPin1 = new MapPin(lastKnownX/scale,lastKnownY*1.3f,pinCounter);
+                mapPin1 = new MapPin(lastKnownX,lastKnownY,pinCounter);
+
+
+                pinCounter++;
+                mapPinsArrayList.add(mapPin1);
+                imageview_map.setPins(mapPinsArrayList);
+
+                imageview_map.post(new Runnable(){
+                    public void run(){
+                        imageview_map.getRootView().postInvalidate();
+                    }
+                });
             }
+            return true;
         }
-    }
-
-    private void pickImage() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, 100);
-
+        return false;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 100 && grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-            pickImage();
-        }else {
-            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show();
-        }
-    }
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (view.getId()== R.id.imageview_map && motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+            //lastKnownX= motionEvent.getX();
+            //lastKnownY= motionEvent.getY();
+            //Log.d(TAG, "onTouch: lastKnownX: "+lastKnownX +"lastKnownY: "+lastKnownY);
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+            PointF sCoord =imageview_map.viewToSourceCoord(motionEvent.getX(), motionEvent.getY());
+            Float actualX = sCoord.x;
+            Float actualY = sCoord.y;
+            Log.d(TAG, "onTouch: actualX: "+actualX +"actualY: "+actualY);
 
-        if (resultCode == RESULT_OK){
-            Uri uri = data.getData();
-            switch (requestCode){
-                case 100:
-                    //Intent intent = new Intent(MainActivity.this, )
-            }
+            lastKnownX = sCoord.x;
+            lastKnownY = sCoord.y;
+
         }
+        return false;
     }
 }

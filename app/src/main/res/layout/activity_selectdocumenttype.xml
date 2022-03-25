@@ -7,7 +7,7 @@
     tools:context=".Activities.MainActivity">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/imageview_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/b6"
@@ -42,7 +42,7 @@
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/imageView" />
+        app:layout_constraintTop_toTopOf="@id/imageview_map" />
 
 
     <androidx.constraintlayout.widget.ConstraintLayout

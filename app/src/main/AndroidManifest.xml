@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dreamsphere.smartdocs">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,11 +14,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name=".Activities.SelectDocumentActivity"></activity>
-        <activity android:name=".Activities.SelectDocumentTypeActivity"></activity>
+        <activity android:name=".Activities.SelectDocumentActivity" />
+        <activity android:name=".Activities.SelectDocumentTypeActivity" />
         <activity android:name=".AdminActivities.NewCompanyDocumentActivity" />
         <activity android:name=".Activities.ProjectActivity" />
-        <activity android:name=".Documents.Sicurstudio_PrimoSopralluogo" />
+        <activity android:name=".Documents.Sicurstudio_PrimoSopralluogo">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity android:name=".Activities.SettingsActivity" />
         <activity android:name=".AutenticationServices.RegisterActivity" />
         <activity android:name=".AdminActivities.NewUsersPool" />
@@ -23,11 +34,6 @@
         <activity android:name=".AutenticationServices.ResetPasswordActivity" />
         <activity android:name=".AutenticationServices.LoginActivity" />
         <activity android:name=".Activities.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

@@ -137,4 +137,29 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
 
+
+    //fixa inserisci nuovo documento con dropdown con tipologie gia esistenti, se non ce allora edittext
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
