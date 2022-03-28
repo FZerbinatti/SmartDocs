@@ -16,25 +16,20 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.text.Layout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,15 +37,14 @@ import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
+import com.dreamsphere.smartdocs.Models.Coordinates;
 import com.dreamsphere.smartdocs.R;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements View.OnLongClickListener, View.OnTouchListener{
     public static final String TAG ="DocSPSActivity";
@@ -67,13 +61,18 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     Float lastKnownX;
     Float lastKnownY;
     ArrayList mapPinsArrayList;
+    ArrayList<Coordinates> arrayListPins;
     Integer pinCounter;
     MapPin mapPin1;
+    String picturePath;
 
     Integer interestPointNumber;
     ImageButton automatic_coordinates;
     ImageButton button_upload;
     EditText denominazione_opera, indirizzo_cantiere, coordinates_north, coordinates_est;
+
+    double A4_WIDTH = 1240.0;
+    double A4_HEIGHT = 1754.0;
 
 
     @Override
@@ -85,6 +84,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         interestPointNumber=1;
         pinCounter =0;
         mapPinsArrayList = new ArrayList();
+        arrayListPins = new ArrayList<>();
 
         create_pdf = findViewById(R.id.create_pdf);
         denominazione_opera = findViewById(R.id.denominazione_opera);
@@ -128,13 +128,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                     String[] PERMISSIONS = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
                     if (!hasPermissions(context, PERMISSIONS)) {
                         ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, REQUEST );
-                        Log.d(TAG, "onClick: 1");
                     } else {
-                        Log.d(TAG, "onClick: 2");
                         ImagePickAction();
                     }
                 } else {
-                    Log.d(TAG, "onClick: 3");
                     ImagePickAction();
                 }
 
@@ -143,7 +140,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     }
 
     public void ImagePickAction(){
-        Log.d(TAG, "ImagePickAction: 4");
+
         Intent i = new Intent(
                 Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -153,7 +150,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     }
 
     private void pickImage() {
-        Log.d(TAG, "pickImage: 5");
+
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         startActivityForResult(intent, 100);
@@ -213,6 +210,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         }
         return true;
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -242,7 +240,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
             cursor.close();
             Log.d(TAG, "onActivityResult: picturePath: "+picturePath);
 
@@ -255,36 +253,6 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
 
 
-    private void createPDF(String string_worksite_name) throws FileNotFoundException {
-        String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        File file = new File(pdfPath, "CompanyName - "+string_worksite_name + "- DocumentType");
-        OutputStream outputStream = new FileOutputStream(file);
-        PdfDocument document = new PdfDocument();
-
-        Paint paint = new Paint();
-        PdfDocument.PageInfo pageInfo1 = new PdfDocument.PageInfo.Builder(1200,2010,1).create();
-        PdfDocument.Page page = document.startPage(pageInfo1);
-        Canvas canvas = page.getCanvas();
-
-        bitmap_map_image = BitmapFactory.decodeResource(getResources(), R.drawable.background_sky);
-        scaledMapImage = Bitmap.createScaledBitmap(bitmap_map_image, 1200,500,false);
-        canvas.drawBitmap( scaledMapImage,0,50, paint);
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        paint.setTextSize(40);
-        canvas.drawText("CompanyName - "+string_worksite_name, pageWidth/2, 200, paint);
-
-        document.finishPage(page);
-
-        try {
-            document.writeTo(new FileOutputStream(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        document.close();
-    }
-
     private void buttonGeneratePDF() {
 
         create_pdf.setOnClickListener(new View.OnClickListener() {
@@ -295,6 +263,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
                 try {
                     createPDF(string_denominazione_opera);
+                    Toast.makeText(context, "PDF Generato, cartella Download", Toast.LENGTH_SHORT).show();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -302,30 +271,97 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         });
     }
 
+    private void createPDF(String string_worksite_name) throws FileNotFoundException {
+        String pdf_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+        String pdf_name ="CompanyName_DocumentType7"+".pdf";
+        File file = new File(pdf_path, pdf_name);
+        Log.d(TAG, "createPDF: "+file.getName()+ " path: "+file.getAbsolutePath());
+
+        //Genera un file PDF con altezza e larghezza prefissata di 1 pagina
+        PdfDocument document = new PdfDocument();
+        PdfDocument.PageInfo pageInfo1 = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,1).create();
+        PdfDocument.Page page = document.startPage(pageInfo1);
+        Canvas canvas = page.getCanvas();
+
+
+        //devo fare il decode Resource della cosa che è adesso dentro l'imageview
+        Log.d(TAG, "createPDF: picturePath: "+picturePath);
+        bitmap_map_image = BitmapFactory.decodeFile(picturePath);
+        //per trasformarla in una bitmap scalabile:
+        bitmap_map_image= bitmap_map_image.copy(Bitmap.Config.ARGB_8888, true);
+
+
+
+        //crea una canvas con la bitmap dellìimmagine uploaddata, scalala in modo che la height della immagine mappa sia 1/2 della height tot del pdf, e la width sia scalata
+        // e la height sia divisa tra il rapport tra la width vera dell'img/2480
+        double imageScale = (float) (A4_WIDTH / bitmap_map_image.getWidth());
+
+        Log.d(TAG, "createPDF: imageScale: "+ A4_WIDTH +"/" +bitmap_map_image.getWidth() +"="+imageScale );
+        Log.d(TAG, "createPDF: bitmap_map_image.getWidth():"+bitmap_map_image.getWidth());
+        Log.d(TAG, "createPDF: bitmap_map_image.getHeight():"+bitmap_map_image.getHeight());
+        int scaled_height =(int) Math.round(bitmap_map_image.getHeight()*imageScale);
+        Log.d(TAG, "createPDF: scaled_height:"+scaled_height);
+        scaledMapImage = Bitmap.createScaledBitmap(bitmap_map_image, (int)A4_WIDTH, scaled_height,false);
+        canvas.drawBitmap( scaledMapImage,0,200, new Paint());
+
+        // usa le coordinate dei pointer per applicare le immagini dei pointer sopra l'immagine uploaddata
+
+
+        //solo se ci sono effettivamente pin/markers allora disegnali sulla mappa
+        if (arrayListPins.size()>0){
+            //bitmap del numero nei drawable, scalato per la scala dell'immagine
+            Bitmap bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_1);
+            int marker_width = bitmap_number.getWidth();
+            int marker_height = bitmap_number.getHeight();
+            float pointerXscaled = (float) (lastKnownX*imageScale-marker_width/2);
+            float pointerYscaled = (float) (lastKnownY*imageScale+marker_height/2);
+            Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
+            canvas.drawBitmap(bitmap_number,pointerXscaled, pointerYscaled, null);
+        }
+
+
+        Paint paint = new Paint();
+        paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        paint.setTextSize(60);
+        //prendi il punto centrale della pagina per centrarlo
+        int width_center =(int) Math.round(bitmap_map_image.getWidth()*imageScale*0.5f);
+        Log.d(TAG, "createPDF: page width: "+ A4_WIDTH + " center? "+width_center);
+        canvas.drawText("CompanyName - "+string_worksite_name, width_center, 100, paint);
+
+
+        document.finishPage(page);
+
+        try {
+            document.writeTo(new FileOutputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        document.close();
+        Log.d(TAG, "createPDF: DOCUMENT CLOSED");
+
+        //genera la notifica che porta alla cartella download
+        generateNotification(pdf_path +pdf_name);
+
+    }
+
+    private void generateNotification(String document_path) {
+
+
+    }
+
 
     @Override
     public boolean onLongClick(View view) {
         if (view.getId() == R.id.imageview_map) {
-            Toast.makeText(this, "Long clicked "+lastKnownX+" "+lastKnownY, Toast.LENGTH_SHORT).show();
-
-            Float scale = imageview_map.getScale();
-            Float density = getResources().getDisplayMetrics().density;
-            Float scaledDensity = getResources().getDisplayMetrics().scaledDensity;
-            Integer densityDPI = getResources().getDisplayMetrics().densityDpi;
-            Log.d(TAG, "onLongClick: image x: "+imageview_map.getX()+ " image y: "+imageview_map.getY());
-            Log.d(TAG, "onLongClick: pin number:"+pinCounter  + " / lastKnownX: "+lastKnownX +" / lastKnownY: "+lastKnownY );
-            Log.d(TAG, "onLongClick: scale: "+scale +" / density: "+density + " / scaledDensity: "+scaledDensity + " / densityDPI: "+densityDPI);
-
-
-
-
             if (pinCounter ==12){
                 Toast.makeText(this, "Max number of Marker is 12!", Toast.LENGTH_SHORT).show();
             }else {
-                //mapPin1 = new MapPin(lastKnownX/scale,lastKnownY*1.3f,pinCounter);
+                arrayListPins.add(new Coordinates(lastKnownX, lastKnownY));
                 mapPin1 = new MapPin(lastKnownX,lastKnownY,pinCounter);
-
-
+                Log.d(TAG, "onLongClick: coordinates: X: "+lastKnownX+ " , Y: "+lastKnownY);
                 pinCounter++;
                 mapPinsArrayList.add(mapPin1);
                 imageview_map.setPins(mapPinsArrayList);
@@ -335,6 +371,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                         imageview_map.getRootView().postInvalidate();
                     }
                 });
+
+                // qui fai un Alert Dialog falsissimo con possibilità di scattare foto e inserire testo da inserire poi nella recyclerview sotto la mappa
+
+
             }
             return true;
         }
@@ -344,18 +384,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
             if (view.getId()== R.id.imageview_map && motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-            //lastKnownX= motionEvent.getX();
-            //lastKnownY= motionEvent.getY();
-            //Log.d(TAG, "onTouch: lastKnownX: "+lastKnownX +"lastKnownY: "+lastKnownY);
-
             PointF sCoord =imageview_map.viewToSourceCoord(motionEvent.getX(), motionEvent.getY());
-            Float actualX = sCoord.x;
-            Float actualY = sCoord.y;
-            Log.d(TAG, "onTouch: actualX: "+actualX +"actualY: "+actualY);
-
             lastKnownX = sCoord.x;
             lastKnownY = sCoord.y;
-
         }
         return false;
     }
