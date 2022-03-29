@@ -4,12 +4,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -24,16 +36,21 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.dreamsphere.smartdocs.BuildConfig;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
@@ -45,6 +62,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements View.OnLongClickListener, View.OnTouchListener{
     public static final String TAG ="DocSPSActivity";
@@ -57,6 +75,13 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     Bitmap bitmap_map_image, scaledMapImage;
     Integer pageWidth = 1200;
     private static int RESULT_LOAD_IMAGE = 1;
+    String CHANNEL_ID = "100";
+    private static final int CAMERA_REQUEST = 1888;
+    ImageView imgeview_picture;
+    private static final int MY_CAMERA_PERMISSION_CODE = 100;
+    ConstraintLayout marker_point_view, dialog_background;
+    Button annulla_interest_point, save_interest_point;
+    ScrollView scrollviewalertDialog;
 
     Float lastKnownX;
     Float lastKnownY;
@@ -94,6 +119,16 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         coordinates_est = findViewById(R.id.coordinates_est);
         button_upload = findViewById(R.id.button_upload);
         imageview_map = findViewById(R.id.imageview_map);
+        imgeview_picture = findViewById(R.id.imgeview_picture);
+        marker_point_view = findViewById(R.id.marker_point_view);
+
+        annulla_interest_point = findViewById(R.id.annulla_interest_point);
+        save_interest_point = findViewById(R.id.save_interest_point);
+        scrollviewalertDialog = findViewById(R.id.scrollviewalertDialog);
+        dialog_background = findViewById(R.id.dialog_background);
+
+
+
 
         imageview_map.isLongClickable();
         imageview_map.isClickable();
@@ -104,6 +139,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         imageview_map.setOnLongClickListener(this);
         imageview_map.setOnTouchListener(this);
 
+
         //add image to the image field
         uploadImageview();
 
@@ -112,7 +148,64 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
         // generate the pdf file after compiling it
         buttonGeneratePDF();
+
+        buttonAnnullaMarker();
+
+        buttonSaveMarker();
+
+
         
+    }
+
+    private void buttonSaveMarker() {
+
+        save_interest_point.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //aggiungi l'immagine e la descrizione alla recycler view
+                alertDialog(false);
+            }
+        });
+    }
+
+    private void buttonAnnullaMarker() {
+
+        annulla_interest_point.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog(false);
+                //togli il marker corrente
+
+                imageview_map.deletePin(pinCounter-1);
+                pinCounter--;
+            }
+        });
+
+    }
+
+    private void buttonTakePicture() {
+        Log.d(TAG, "buttonTakePicture: 1");
+
+        imgeview_picture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String[] PERMISSIONS = {android.Manifest.permission.CAMERA};
+
+                if (!hasPermissions(context, PERMISSIONS))
+                {
+                    Log.d(TAG, "onClick: 2");
+                    ActivityCompat.requestPermissions((Activity) context, PERMISSIONS, MY_CAMERA_PERMISSION_CODE );
+                }
+                else
+                {
+                    Log.d(TAG, "onClick: 3");
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                }
+            }
+        });
+
     }
 
 
@@ -222,6 +315,18 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             } else {
                 Toast.makeText(context, "The app was not allowed to access your location", Toast.LENGTH_LONG).show();
             }
+        }else if (requestCode == MY_CAMERA_PERMISSION_CODE)
+        {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+            }
+            else
+            {
+                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -248,6 +353,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             imageview_map.setImage(ImageSource.bitmap(BitmapFactory.decodeFile(picturePath)));
         }else  if (requestCode == 100){
             Log.d(TAG, "onActivityResult: result code 100");
+        } else if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK)
+        {
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            imgeview_picture.setImageBitmap(photo);
         }
     }
 
@@ -260,7 +369,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             public void onClick(View view) {
                 String string_denominazione_opera = denominazione_opera.getText().toString();
 
-                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
                 try {
                     createPDF(string_denominazione_opera);
                     Toast.makeText(context, "PDF Generato, cartella Download", Toast.LENGTH_SHORT).show();
@@ -273,7 +382,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     private void createPDF(String string_worksite_name) throws FileNotFoundException {
         String pdf_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        String pdf_name ="CompanyName_DocumentType7"+".pdf";
+
+        Log.d(TAG, "createPDF: writing to: "+pdf_path);
+        String pdf_name ="CompanyName_DocumentType12"+".pdf";
         File file = new File(pdf_path, pdf_name);
         Log.d(TAG, "createPDF: "+file.getName()+ " path: "+file.getAbsolutePath());
 
@@ -341,17 +452,51 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
         document.close();
         Log.d(TAG, "createPDF: DOCUMENT CLOSED");
-
-        //genera la notifica che porta alla cartella download
-        generateNotification(pdf_path +pdf_name);
+        addNotification(file);
 
     }
 
-    private void generateNotification(String document_path) {
+    public void addNotification(File file) {
 
+        // Aggiunge una notifica che al tap porta agli ultimi download del telefono, dove è presente il file generato
+        createNotificationChannel();
+        Intent intent = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_bulb)
+                .setColor(context.getResources().getColor(R.color.y2))
+                .setStyle(new NotificationCompat.InboxStyle()
+                        .addLine("Clicca qui per aprire il file")
+                )
+                .setContentTitle(file.getName())
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        notificationManagerCompat.notify(1, notification);
 
     }
 
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
 
     @Override
     public boolean onLongClick(View view) {
@@ -366,6 +511,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 mapPinsArrayList.add(mapPin1);
                 imageview_map.setPins(mapPinsArrayList);
 
+
                 imageview_map.post(new Runnable(){
                     public void run(){
                         imageview_map.getRootView().postInvalidate();
@@ -373,6 +519,17 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 });
 
                 // qui fai un Alert Dialog falsissimo con possibilità di scattare foto e inserire testo da inserire poi nella recyclerview sotto la mappa
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        // Actions to do after 10 seconds
+                        alertDialog(true);
+                        buttonTakePicture();
+                    }
+                }, 1000);
+
+
 
 
             }
@@ -389,5 +546,28 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             lastKnownY = sCoord.y;
         }
         return false;
+    }
+
+    public void alertDialog(Boolean enabled){
+
+        if (enabled==true){
+
+            dialog_background.setVisibility(View.VISIBLE);
+            marker_point_view.setVisibility(View.VISIBLE);
+            create_pdf.setVisibility(View.GONE);
+            scrollviewalertDialog.setVisibility(View.VISIBLE);
+            dialog_background.animate().alpha(1.0f).setDuration(1000);
+            marker_point_view.animate().alpha(1.0f).setDuration(1000);
+
+        }else {
+            dialog_background.setVisibility(View.GONE);
+            marker_point_view.setVisibility(View.GONE);
+            create_pdf.setVisibility(View.VISIBLE);
+            scrollviewalertDialog.setVisibility(View.GONE);
+            dialog_background.animate().alpha(0.0f).setDuration(1000);
+            marker_point_view.animate().alpha(0.0f).setDuration(1000);
+
+        }
+
     }
 }

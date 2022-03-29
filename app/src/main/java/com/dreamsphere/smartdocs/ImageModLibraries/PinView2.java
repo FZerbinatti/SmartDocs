@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.dreamsphere.smartdocs.R;
@@ -121,5 +122,15 @@ public class PinView2 extends SubsamplingScaleImageView {
             }
         }
         return -1; //negative no means no pin selected
+    }
+
+    public void deletePin(int pinNumber){
+        Log.d("TAG", "deletePin: "+drawnPins.size());
+        Log.d("TAG", "deletePin: "+mapPins.size());
+        drawnPins.remove(pinNumber);
+        mapPins.remove(pinNumber);
+        initialise();
+        invalidate();
+
     }
 }
