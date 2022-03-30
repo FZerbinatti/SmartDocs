@@ -9,7 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
@@ -18,18 +18,17 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
@@ -50,7 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.dreamsphere.smartdocs.BuildConfig;
+import com.dreamsphere.smartdocs.Adapters.RecyclerView_Marker_Adapter;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
@@ -62,7 +61,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements View.OnLongClickListener, View.OnTouchListener{
     public static final String TAG ="DocSPSActivity";
@@ -72,17 +70,18 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     GPSTracker gps;
     private static final int REQUEST = 112;
     PinView2 imageview_map;
-    Bitmap bitmap_map_image, scaledMapImage;
+    Bitmap bitmap_map_image, scaledMapImage, scaledPictureImage;
     Integer pageWidth = 1200;
     private static int RESULT_LOAD_IMAGE = 1;
     String CHANNEL_ID = "100";
     private static final int CAMERA_REQUEST = 1888;
-    ImageView imgeview_picture;
+    ImageView imgeview_picture, imgeview_dialog_image;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
     ConstraintLayout marker_point_view, dialog_background;
     Button annulla_interest_point, save_interest_point;
     ScrollView scrollviewalertDialog;
-
+    RecyclerView recyclerview_markers;
+    RecyclerView_Marker_Adapter recyclerView_marker_adapter;
     Float lastKnownX;
     Float lastKnownY;
     ArrayList mapPinsArrayList;
@@ -90,10 +89,18 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     Integer pinCounter;
     MapPin mapPin1;
     String picturePath;
+    Paint paint;
+    Rect rect;
+    float x_down;
+    float y_down;
+    float x_move;
+    float y_move;
+    float x_up;
+    float y_up;
 
     Integer interestPointNumber;
     ImageButton automatic_coordinates;
-    ImageButton button_upload;
+    ImageButton button_upload, button_draw_circle, button_add_picture;
     EditText denominazione_opera, indirizzo_cantiere, coordinates_north, coordinates_est;
 
     double A4_WIDTH = 1240.0;
@@ -126,9 +133,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         save_interest_point = findViewById(R.id.save_interest_point);
         scrollviewalertDialog = findViewById(R.id.scrollviewalertDialog);
         dialog_background = findViewById(R.id.dialog_background);
-
-
-
+        recyclerview_markers = findViewById(R.id.recyclerview_markers);
+        imgeview_dialog_image = findViewById(R.id.imgeview_dialog_image);
+        button_draw_circle = findViewById(R.id.button_draw_circle);
+        button_add_picture = findViewById(R.id.button_add_picture);
 
         imageview_map.isLongClickable();
         imageview_map.isClickable();
@@ -154,8 +162,86 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         buttonSaveMarker();
 
 
-        
+
     }
+
+    private void buttonDrawRectangleOnPicture(Canvas canvas) {
+        Log.d(TAG, "onActivityResult: canvas: "+canvas.getWidth()+"x"+canvas.getHeight());
+
+
+        Log.d(TAG, "buttonDrawRectangleOnPicture: ");
+
+        button_draw_circle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            x_down=0;
+            y_down=0;
+            x_move=0;
+            y_move=0;
+            x_up=0;
+            y_up=0;
+            paint = new Paint();
+            rect = new Rect();
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(10);
+            paint.setStyle(Paint.Style.STROKE);
+
+                imgeview_picture.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+
+
+
+                        //draw rectangle on touch down-> on touch move -> on touch up
+
+                        switch(motionEvent.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                // touch down code
+                                Log.d(TAG, "onTouchDown: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                x_down=motionEvent.getX();
+                                y_down=motionEvent.getY();
+                                break;
+
+                            case MotionEvent.ACTION_MOVE:
+                                // touch move code
+                                Log.d(TAG, "onTouchMove: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                x_move=motionEvent.getX();
+                                y_move=motionEvent.getY();
+                                break;
+
+                            case MotionEvent.ACTION_UP:
+                                // touch up code
+                                Log.d(TAG, "onTouchUp: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                x_up=motionEvent.getX();
+                                y_up=motionEvent.getY();
+
+                                canvas.drawRect(x_down,y_down, x_up, y_up, paint);
+                                Log.d(TAG, "onTouch: drawed");
+                                imgeview_picture.post(new Runnable(){
+                                    public void run(){
+                                        imgeview_picture.getRootView().postInvalidate();
+                                    }
+                                });
+                                break;
+                        }
+                        return false;
+                    }
+                });
+                imgeview_picture.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.d(TAG, "onClick: click");
+                    }
+                });
+            }
+        });
+
+    }
+
+
+
+
 
     private void buttonSaveMarker() {
 
@@ -163,7 +249,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             @Override
             public void onClick(View view) {
                 //aggiungi l'immagine e la descrizione alla recycler view
+
                 alertDialog(false);
+
             }
         });
     }
@@ -186,7 +274,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     private void buttonTakePicture() {
         Log.d(TAG, "buttonTakePicture: 1");
 
-        imgeview_picture.setOnClickListener(new View.OnClickListener() {
+        button_add_picture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -207,7 +295,6 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         });
 
     }
-
 
     //metodi per il caricamento dell'immagine
     private void  uploadImageview() {
@@ -355,12 +442,28 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             Log.d(TAG, "onActivityResult: result code 100");
         } else if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK)
         {
+            //prendi l'immagine e scalala in modo che sia in formato max HD: 1280x720 con il param H variabile
             Bitmap photo = (Bitmap) data.getExtras().get("data");
-            imgeview_picture.setImageBitmap(photo);
+            Log.d(TAG, "onActivityResult: bitmap size: "+photo.getWidth()+"x"+photo.getHeight());
+
+            double imageScale = (float) (1280 / photo.getWidth());
+            int scaled_height =(int) Math.round(photo.getHeight()*imageScale);
+
+            button_add_picture.setVisibility(View.GONE);
+            button_draw_circle.setVisibility(View.VISIBLE);
+
+            scaledPictureImage = Bitmap.createScaledBitmap(photo, 1280, scaled_height,false);
+            Log.d(TAG, "onActivityResult: scaled: "+scaledPictureImage.getWidth()+"x"+scaledPictureImage.getHeight());
+            imgeview_picture.setImageBitmap(scaledPictureImage);
+            Canvas canvas = new Canvas(scaledPictureImage);
+
+            //canvas.drawBitmap( scaledPictureImage,0,0, new Paint());
+            Log.d(TAG, "onActivityResult: canvas: "+canvas.getWidth()+"x"+canvas.getHeight());
+            canvas.save();
+
+            buttonDrawRectangleOnPicture(canvas);
         }
     }
-
-
 
     private void buttonGeneratePDF() {
 
@@ -528,10 +631,6 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                         buttonTakePicture();
                     }
                 }, 1000);
-
-
-
-
             }
             return true;
         }
@@ -546,6 +645,19 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             lastKnownY = sCoord.y;
         }
         return false;
+    }
+
+
+    public void onDraw(Canvas canvas) {
+        paint.setColor(Color.BLACK);
+        paint.setStrokeWidth(3);
+        canvas.drawRect(30, 30, 80, 80, paint);
+        paint.setStrokeWidth(0);
+        paint.setColor(Color.CYAN);
+        canvas.drawRect(33, 60, 77, 77, paint );
+        paint.setColor(Color.YELLOW);
+        canvas.drawRect(33, 33, 77, 60, paint );
+
     }
 
     public void alertDialog(Boolean enabled){
@@ -566,6 +678,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             scrollviewalertDialog.setVisibility(View.GONE);
             dialog_background.animate().alpha(0.0f).setDuration(1000);
             marker_point_view.animate().alpha(0.0f).setDuration(1000);
+            button_add_picture.setVisibility(View.VISIBLE);
+            button_draw_circle.setVisibility(View.GONE);
+
 
         }
 

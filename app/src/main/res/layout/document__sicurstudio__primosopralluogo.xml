@@ -169,7 +169,7 @@
             android:id="@+id/button_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/buttons_background_white_stroke_small"
+            android:background="@drawable/buttons_logout_background"
             android:padding="10sp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="6dp"
@@ -244,7 +244,7 @@
                 android:layout_height="wrap_content">
 
                 <ImageView
-                    android:id="@+id/imgeview_picture2"
+                    android:id="@+id/imgeview_dialog_image"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_margin="10dp"
@@ -268,6 +268,49 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/button_draw_circle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/buttons_logout_background"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:padding="10sp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:shadowColor="@color/opaque_white"
+                    android:src="@drawable/ic_circle"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="@+id/imgeview_dialog_image"
+                    app:layout_constraintEnd_toEndOf="@+id/imgeview_dialog_image" />
+
+                <ImageButton
+                    android:id="@+id/button_add_picture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/buttons_logout_background"
+                    android:gravity="center"
+                    android:padding="10sp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:shadowColor="@color/opaque_white"
+                    android:src="@drawable/ic_add"
+                    android:textColor="@color/black"
+                    app:layout_constraintBottom_toBottomOf="@+id/imgeview_dialog_image"
+                    app:layout_constraintEnd_toEndOf="@+id/imgeview_dialog_image" />
+
+
+
+<!--                <SeekBar
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="10dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/button_draw_circle"
+                    app:layout_constraintEnd_toStartOf="@+id/button_draw_circle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/button_draw_circle" />-->
 
 
                 <EditText
