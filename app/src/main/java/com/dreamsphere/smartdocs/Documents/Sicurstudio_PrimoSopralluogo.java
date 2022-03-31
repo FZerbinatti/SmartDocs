@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.Notification;
@@ -49,11 +50,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.dreamsphere.smartdocs.Adapters.RecyclerView_Marker_Adapter;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
+import com.dreamsphere.smartdocs.ImageModLibraries.RectangleView2;
 import com.dreamsphere.smartdocs.Models.Coordinates;
+import com.dreamsphere.smartdocs.Models.Marker;
 import com.dreamsphere.smartdocs.R;
 
 import java.io.File;
@@ -69,13 +73,14 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     TextView add_interest_point, create_pdf;
     GPSTracker gps;
     private static final int REQUEST = 112;
-    PinView2 imageview_map;
+    PinView2  imageview_map ;
+    RectangleView2 imgeview_picture;
     Bitmap bitmap_map_image, scaledMapImage, scaledPictureImage;
     Integer pageWidth = 1200;
     private static int RESULT_LOAD_IMAGE = 1;
     String CHANNEL_ID = "100";
     private static final int CAMERA_REQUEST = 1888;
-    ImageView imgeview_picture, imgeview_dialog_image;
+    ImageView  imgeview_dialog_image;
     private static final int MY_CAMERA_PERMISSION_CODE = 100;
     ConstraintLayout marker_point_view, dialog_background;
     Button annulla_interest_point, save_interest_point;
@@ -86,6 +91,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     Float lastKnownY;
     ArrayList mapPinsArrayList;
     ArrayList<Coordinates> arrayListPins;
+    ArrayList<Marker> marker_list;
     Integer pinCounter;
     MapPin mapPin1;
     String picturePath;
@@ -97,6 +103,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     float y_move;
     float x_up;
     float y_up;
+    Rect rectangle;
+    Bitmap current_marker_bitmap;
+
+
 
     Integer interestPointNumber;
     ImageButton automatic_coordinates;
@@ -147,6 +157,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         imageview_map.setOnLongClickListener(this);
         imageview_map.setOnTouchListener(this);
 
+        marker_list = new ArrayList<>();
+        current_marker_bitmap = null;
+
 
         //add image to the image field
         uploadImageview();
@@ -175,19 +188,27 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             @Override
             public void onClick(View view) {
 
-            x_down=0;
-            y_down=0;
-            x_move=0;
-            y_move=0;
-            x_up=0;
-            y_up=0;
-            paint = new Paint();
-            rect = new Rect();
-            paint.setColor(Color.RED);
-            paint.setStrokeWidth(10);
-            paint.setStyle(Paint.Style.STROKE);
+                PointF start_point = new PointF(x_down, y_down);
+                PointF end_point = new PointF(x_up, y_up);
+
+                PointF moving_point = new PointF(x_move, y_move);
+                rectangle= new Rect();
+                x_down=0;
+                y_down=0;
+                x_move=0;
+                y_move=0;
+                x_up=0;
+                y_up=0;
+                paint = new Paint();
+                rect = new Rect();
+                paint.setColor(Color.RED);
+                paint.setStrokeWidth(10);
+                paint.setStyle(Paint.Style.STROKE);
+
+
 
                 imgeview_picture.setOnTouchListener(new View.OnTouchListener() {
+                    @SuppressLint("ClickableViewAccessibility")
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
 
@@ -208,21 +229,20 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                                 Log.d(TAG, "onTouchMove: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
                                 x_move=motionEvent.getX();
                                 y_move=motionEvent.getY();
-                                break;
+                                rectangle = new Rect((int) Math.round(x_down),(int) Math.round(y_down), (int) Math.round(x_move),(int) Math.round(y_move));
+                                imgeview_picture.setRectangle(rectangle);
 
-                            case MotionEvent.ACTION_UP:
-                                // touch up code
-                                Log.d(TAG, "onTouchUp: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
-                                x_up=motionEvent.getX();
-                                y_up=motionEvent.getY();
-
-                                canvas.drawRect(x_down,y_down, x_up, y_up, paint);
-                                Log.d(TAG, "onTouch: drawed");
                                 imgeview_picture.post(new Runnable(){
                                     public void run(){
                                         imgeview_picture.getRootView().postInvalidate();
                                     }
                                 });
+                                break;
+
+                            case MotionEvent.ACTION_UP:
+                                // touch up code
+                                Log.d(TAG, "onTouchUp: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+
                                 break;
                         }
                         return false;
@@ -239,16 +259,15 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     }
 
-
-
-
-
     private void buttonSaveMarker() {
 
         save_interest_point.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //aggiungi l'immagine e la descrizione alla recycler view
+                //aggiungi l'immagine e la descrizione alla recycler view, resetta la view dell'immagine imgeview_picture
+                //prendi l'immagine del marker e salvalo come bitmap
+
+                //marker_list.add()
 
                 alertDialog(false);
 
@@ -454,7 +473,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
             scaledPictureImage = Bitmap.createScaledBitmap(photo, 1280, scaled_height,false);
             Log.d(TAG, "onActivityResult: scaled: "+scaledPictureImage.getWidth()+"x"+scaledPictureImage.getHeight());
-            imgeview_picture.setImageBitmap(scaledPictureImage);
+            imgeview_picture.setImage(ImageSource.bitmap(scaledPictureImage));
             Canvas canvas = new Canvas(scaledPictureImage);
 
             //canvas.drawBitmap( scaledPictureImage,0,0, new Paint());
@@ -503,8 +522,6 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         bitmap_map_image = BitmapFactory.decodeFile(picturePath);
         //per trasformarla in una bitmap scalabile:
         bitmap_map_image= bitmap_map_image.copy(Bitmap.Config.ARGB_8888, true);
-
-
 
         //crea una canvas con la bitmap dellìimmagine uploaddata, scalala in modo che la height della immagine mappa sia 1/2 della height tot del pdf, e la width sia scalata
         // e la height sia divisa tra il rapport tra la width vera dell'img/2480
@@ -645,19 +662,6 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             lastKnownY = sCoord.y;
         }
         return false;
-    }
-
-
-    public void onDraw(Canvas canvas) {
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(3);
-        canvas.drawRect(30, 30, 80, 80, paint);
-        paint.setStrokeWidth(0);
-        paint.setColor(Color.CYAN);
-        canvas.drawRect(33, 60, 77, 77, paint );
-        paint.setColor(Color.YELLOW);
-        canvas.drawRect(33, 33, 77, 60, paint );
-
     }
 
     public void alertDialog(Boolean enabled){
