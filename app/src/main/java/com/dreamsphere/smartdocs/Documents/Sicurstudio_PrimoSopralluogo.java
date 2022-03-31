@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
@@ -105,6 +106,12 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     float y_up;
     Rect rectangle;
     Bitmap current_marker_bitmap;
+    Canvas current_photo_canvas;
+    Rect current_photo_rectangle;
+    PointF current_photo_position;
+    int photo_scaled_height;
+    String current_photo_description;
+    EditText edittext_marker_description;
 
 
 
@@ -115,6 +122,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     double A4_WIDTH = 1240.0;
     double A4_HEIGHT = 1754.0;
+    double PHOTO_WIDTH = 1280.0;
 
 
     @Override
@@ -147,6 +155,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         imgeview_dialog_image = findViewById(R.id.imgeview_dialog_image);
         button_draw_circle = findViewById(R.id.button_draw_circle);
         button_add_picture = findViewById(R.id.button_add_picture);
+        edittext_marker_description = findViewById(R.id.edittext_marker_description);
 
         imageview_map.isLongClickable();
         imageview_map.isClickable();
@@ -159,6 +168,11 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
         marker_list = new ArrayList<>();
         current_marker_bitmap = null;
+        current_photo_canvas = new Canvas();
+        current_photo_rectangle = new Rect();
+        current_photo_position = new PointF();
+        photo_scaled_height =0;
+        current_photo_description ="";
 
 
         //add image to the image field
@@ -222,6 +236,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                                 Log.d(TAG, "onTouchDown: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
                                 x_down=motionEvent.getX();
                                 y_down=motionEvent.getY();
+                                current_photo_position = new PointF(x_down, y_down);
                                 break;
 
                             case MotionEvent.ACTION_MOVE:
@@ -231,6 +246,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                                 y_move=motionEvent.getY();
                                 rectangle = new Rect((int) Math.round(x_down),(int) Math.round(y_down), (int) Math.round(x_move),(int) Math.round(y_move));
                                 imgeview_picture.setRectangle(rectangle);
+                                current_photo_rectangle = rectangle;
 
                                 imgeview_picture.post(new Runnable(){
                                     public void run(){
@@ -266,8 +282,28 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             public void onClick(View view) {
                 //aggiungi l'immagine e la descrizione alla recycler view, resetta la view dell'immagine imgeview_picture
                 //prendi l'immagine del marker e salvalo come bitmap
+                paint = new Paint();
+                rect = new Rect();
+                paint.setColor(Color.RED);
+                paint.setStrokeWidth(10);
+                paint.setStyle(Paint.Style.STROKE);
 
-                //marker_list.add()
+
+
+                //current_marker_bitmap =  Bitmap.createBitmap((int)PHOTO_WIDTH, photo_scaled_height, Bitmap.Config.ARGB_8888);
+
+                Canvas test = new Canvas(current_marker_bitmap);
+
+                test.drawRect(current_photo_rectangle.left,current_photo_rectangle.top, current_photo_rectangle.right,current_photo_rectangle.bottom, paint);
+                test.save();
+
+
+                marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_marker_bitmap));
+                recyclerView_marker_adapter = new RecyclerView_Marker_Adapter(context, marker_list);
+                recyclerView_marker_adapter.notifyDataSetChanged();
+                recyclerview_markers.setLayoutManager(new LinearLayoutManager(context));
+                recyclerview_markers.setAdapter(recyclerView_marker_adapter);
+
 
                 alertDialog(false);
 
@@ -463,23 +499,25 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         {
             //prendi l'immagine e scalala in modo che sia in formato max HD: 1280x720 con il param H variabile
             Bitmap photo = (Bitmap) data.getExtras().get("data");
+
             Log.d(TAG, "onActivityResult: bitmap size: "+photo.getWidth()+"x"+photo.getHeight());
 
-            double imageScale = (float) (1280 / photo.getWidth());
-            int scaled_height =(int) Math.round(photo.getHeight()*imageScale);
+            double imageScale = (float) (PHOTO_WIDTH / photo.getWidth());
+            photo_scaled_height =(int) Math.round(photo.getHeight()*imageScale);
 
             button_add_picture.setVisibility(View.GONE);
             button_draw_circle.setVisibility(View.VISIBLE);
 
-            scaledPictureImage = Bitmap.createScaledBitmap(photo, 1280, scaled_height,false);
+            scaledPictureImage = Bitmap.createScaledBitmap(photo, (int)PHOTO_WIDTH, photo_scaled_height,false);
             Log.d(TAG, "onActivityResult: scaled: "+scaledPictureImage.getWidth()+"x"+scaledPictureImage.getHeight());
             imgeview_picture.setImage(ImageSource.bitmap(scaledPictureImage));
+            current_marker_bitmap =scaledPictureImage;
+
             Canvas canvas = new Canvas(scaledPictureImage);
 
             //canvas.drawBitmap( scaledPictureImage,0,0, new Paint());
             Log.d(TAG, "onActivityResult: canvas: "+canvas.getWidth()+"x"+canvas.getHeight());
             canvas.save();
-
             buttonDrawRectangleOnPicture(canvas);
         }
     }

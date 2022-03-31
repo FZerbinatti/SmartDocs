@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.dreamsphere.smartdocs.Interfaces.RecyclerViewClickListener;
 import com.dreamsphere.smartdocs.Models.Marker;
@@ -70,22 +71,25 @@ public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerV
 
         String marker_description = markersList.get(i).getDescription();
         Bitmap marker_image = markersList.get(i).getMarker_image();
+        Log.d(TAG, "onBindViewHolder: recyclerview image: "+marker_image.getWidth()+"x"+marker_image.getHeight());
 
         thisMarker.setDescription(marker_description);
         thisMarker.setMarker_image(marker_image);
 
+        viewHolder.textview_marker_description.setText(marker_description);
+        viewHolder.textView_number.setText(String.valueOf(i+1));
+
         RequestOptions options = new RequestOptions()
                 .centerCrop()
-                //.diskCacheStrategy(DiskCacheStrategy.NONE)
-                //.skipMemoryCache(true)
-                .error(R.drawable.square_blue_box)
-                ;
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .error(R.drawable.square_blue_box);
                 viewHolder.image_marker_photo.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
-                Glide
-                        .with(context)
-                        .load(marker_image)
-                        .apply(options)
-                        .into(viewHolder.image_marker_photo);
+        Glide
+                .with(context)
+                .load(marker_image)
+                .apply(options)
+                .into(viewHolder.image_marker_photo);
     }
 
     @Override
@@ -97,6 +101,7 @@ public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerV
 
         private ImageView image_marker_photo;
         private TextView textview_marker_description;
+        private  TextView textView_number;
 
 
 
@@ -105,6 +110,8 @@ public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerV
 
             image_marker_photo = (ImageView) itemView.findViewById(R.id.item_picture_marker);
             textview_marker_description = (TextView) itemView.findViewById(R.id.item_description_marker);
+            textView_number = (TextView) itemView.findViewById(R.id.textView_number);
+
         }
     }
     // allows clicks events to be caught
