@@ -80,7 +80,7 @@ public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerV
         viewHolder.textView_number.setText(String.valueOf(i+1));
 
         RequestOptions options = new RequestOptions()
-                .centerCrop()
+                .centerInside()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
                 .error(R.drawable.square_blue_box);

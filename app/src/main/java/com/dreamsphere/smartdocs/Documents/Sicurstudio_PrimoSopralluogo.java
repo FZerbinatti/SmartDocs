@@ -51,7 +51,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.dreamsphere.smartdocs.Adapters.RecyclerView_Marker_Adapter;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
@@ -75,7 +74,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     GPSTracker gps;
     private static final int REQUEST = 112;
     PinView2  imageview_map ;
-    RectangleView2 imgeview_picture;
+    RectangleView2 imageview_picture;
     Bitmap bitmap_map_image, scaledMapImage, scaledPictureImage;
     Integer pageWidth = 1200;
     private static int RESULT_LOAD_IMAGE = 1;
@@ -144,7 +143,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         coordinates_est = findViewById(R.id.coordinates_est);
         button_upload = findViewById(R.id.button_upload);
         imageview_map = findViewById(R.id.imageview_map);
-        imgeview_picture = findViewById(R.id.imgeview_picture);
+        imageview_picture = findViewById(R.id.imgeview_picture);
         marker_point_view = findViewById(R.id.marker_point_view);
 
         annulla_interest_point = findViewById(R.id.annulla_interest_point);
@@ -221,7 +220,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
 
 
-                imgeview_picture.setOnTouchListener(new View.OnTouchListener() {
+                imageview_picture.setOnTouchListener(new View.OnTouchListener() {
                     @SuppressLint("ClickableViewAccessibility")
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -245,12 +244,12 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                                 x_move=motionEvent.getX();
                                 y_move=motionEvent.getY();
                                 rectangle = new Rect((int) Math.round(x_down),(int) Math.round(y_down), (int) Math.round(x_move),(int) Math.round(y_move));
-                                imgeview_picture.setRectangle(rectangle);
+                                imageview_picture.setRectangle(rectangle);
                                 current_photo_rectangle = rectangle;
 
-                                imgeview_picture.post(new Runnable(){
+                                imageview_picture.post(new Runnable(){
                                     public void run(){
-                                        imgeview_picture.getRootView().postInvalidate();
+                                        imageview_picture.getRootView().postInvalidate();
                                     }
                                 });
                                 break;
@@ -258,13 +257,16 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                             case MotionEvent.ACTION_UP:
                                 // touch up code
                                 Log.d(TAG, "onTouchUp: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                Log.d(TAG, "onClick: imgeview_picture: "+ imageview_picture.getWidth() +"x"+ imageview_picture.getHeight());
+
+                                Log.d(TAG, "onTouch: rettangolo finale disegnato: "+current_photo_rectangle);
 
                                 break;
                         }
                         return false;
                     }
                 });
-                imgeview_picture.setOnClickListener(new View.OnClickListener() {
+                imageview_picture.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Log.d(TAG, "onClick: click");
@@ -293,8 +295,15 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 //current_marker_bitmap =  Bitmap.createBitmap((int)PHOTO_WIDTH, photo_scaled_height, Bitmap.Config.ARGB_8888);
 
                 Canvas test = new Canvas(current_marker_bitmap);
+                Log.d(TAG, "onClick: current_marker_bitmap: "+current_marker_bitmap.getWidth() +"x"+current_marker_bitmap.getHeight());
 
-                test.drawRect(current_photo_rectangle.left,current_photo_rectangle.top, current_photo_rectangle.right,current_photo_rectangle.bottom, paint);
+
+                double scale_preview_factor =(float)current_marker_bitmap.getWidth()/imageview_picture.getWidth();
+                Log.d(TAG, "onClick: scale_preview_factor: "+scale_preview_factor);
+                int rectangle_height = current_photo_rectangle.bottom-current_photo_rectangle.top;
+                test.drawRect(integer_value_scaled(current_photo_rectangle.left, scale_preview_factor),integer_value_scaled(current_photo_rectangle.top+rectangle_height*2, scale_preview_factor),
+                        integer_value_scaled(current_photo_rectangle.right, scale_preview_factor) ,integer_value_scaled(current_photo_rectangle.bottom+rectangle_height*2, scale_preview_factor), paint);
+                Log.d(TAG, "onClick: rettangolo in miniatura: " +current_photo_rectangle.left+","+current_photo_rectangle.top+","+ current_photo_rectangle.right+","+current_photo_rectangle.bottom);
                 test.save();
 
 
@@ -309,6 +318,19 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
             }
         });
+    }
+
+    public int integer_value_scaled(int value, double scale){
+
+
+
+        int scaled=0;
+
+        scaled = (int) Math.round(value*scale);
+
+
+        return scaled;
+
     }
 
     private void buttonAnnullaMarker() {
@@ -510,7 +532,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
             scaledPictureImage = Bitmap.createScaledBitmap(photo, (int)PHOTO_WIDTH, photo_scaled_height,false);
             Log.d(TAG, "onActivityResult: scaled: "+scaledPictureImage.getWidth()+"x"+scaledPictureImage.getHeight());
-            imgeview_picture.setImage(ImageSource.bitmap(scaledPictureImage));
+            imageview_picture.setImage(ImageSource.bitmap(scaledPictureImage));
             current_marker_bitmap =scaledPictureImage;
 
             Canvas canvas = new Canvas(scaledPictureImage);

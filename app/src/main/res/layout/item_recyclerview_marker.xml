@@ -28,6 +28,8 @@
         android:background="@drawable/square_corners_dark"
         android:padding="3dp"
         android:layout_marginStart="65dp"
+        android:scaleType="centerInside"
+
         android:src="@color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
