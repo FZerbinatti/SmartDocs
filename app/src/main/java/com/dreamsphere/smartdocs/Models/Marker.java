@@ -2,19 +2,23 @@ package com.dreamsphere.smartdocs.Models;
 
 import android.graphics.Bitmap;
 
+import java.io.File;
+
 public class Marker {
 
     String description;
-    Bitmap marker_image;
+    File file;
 
-    public Marker(String description, Bitmap marker_image) {
+    public Marker(String description, File file) {
         this.description = description;
-        this.marker_image = marker_image;
+        this.file = file;
     }
 
     public Marker() {
 
     }
+
+
 
     public String getDescription() {
         return description;
@@ -24,11 +28,12 @@ public class Marker {
         this.description = description;
     }
 
-    public Bitmap getMarker_image() {
-        return marker_image;
+    public File getFile() {
+        return file;
     }
 
-    public void setMarker_image(Bitmap marker_image) {
-        this.marker_image = marker_image;
+    public void setFile(File file) {
+        this.file = file;
     }
+
 }

@@ -38,6 +38,7 @@ public class RectangleView2 extends SubsamplingScaleImageView {
         this.rectangle = rectangle;
         initialise();
         invalidate();
+
     }
 
     private void initialise() {
@@ -59,6 +60,8 @@ public class RectangleView2 extends SubsamplingScaleImageView {
             paint.setStrokeWidth(10);
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawRect(rectangle.left,rectangle.top, rectangle.right,rectangle.bottom, paint);
+
+
 
         }else {
             Log.d("TAG", "onDraw: RECTANGLE IS NULL LMAO");

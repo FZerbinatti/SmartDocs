@@ -1,5 +1,6 @@
 package com.dreamsphere.smartdocs.Documents;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -21,18 +22,30 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
+import android.media.Image;
+import android.media.ImageReader;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,8 +53,10 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -50,12 +65,14 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.dreamsphere.smartdocs.Adapters.RecyclerView_Marker_Adapter;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
-import com.dreamsphere.smartdocs.ImageModLibraries.RectangleView2;
 import com.dreamsphere.smartdocs.Models.Coordinates;
 import com.dreamsphere.smartdocs.Models.Marker;
 import com.dreamsphere.smartdocs.R;
@@ -64,18 +81,23 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements View.OnLongClickListener, View.OnTouchListener{
-    public static final String TAG ="DocSPSActivity";
+    public static final String TAG ="Documento_Sopralluogo";
 
     Context context;
     TextView add_interest_point, create_pdf;
     GPSTracker gps;
     private static final int REQUEST = 112;
     PinView2  imageview_map ;
-    RectangleView2 imageview_picture;
-    Bitmap bitmap_map_image, scaledMapImage, scaledPictureImage;
+    //RectangleView2 imageview_picture;
+    Bitmap bitmap_map_image, scaledMapImage;
     Integer pageWidth = 1200;
     private static int RESULT_LOAD_IMAGE = 1;
     String CHANNEL_ID = "100";
@@ -104,13 +126,28 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     float x_up;
     float y_up;
     Rect rectangle;
-    Bitmap current_marker_bitmap;
+    Bitmap current_marker_photo_bitmap;
     Canvas current_photo_canvas;
     Rect current_photo_rectangle;
     PointF current_photo_position;
     int photo_scaled_height;
     String current_photo_description;
     EditText edittext_marker_description;
+    ImageView imageview_picture;
+    String string_path_current_photo;
+    String folderPath;
+    private String cameraId;
+    private Size imageDimension;
+    String photo_name;
+    private File current_photo_file;
+    ArrayList<File> photos_taken_files;
+    File file_photo_directory;
+
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
 
 
@@ -122,6 +159,9 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     double A4_WIDTH = 1240.0;
     double A4_HEIGHT = 1754.0;
     double PHOTO_WIDTH = 1280.0;
+    double PREVIEW_PHOTO = 640.0;
+
+    String project_name, user_company, document_type;
 
 
     @Override
@@ -143,7 +183,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         coordinates_est = findViewById(R.id.coordinates_est);
         button_upload = findViewById(R.id.button_upload);
         imageview_map = findViewById(R.id.imageview_map);
-        imageview_picture = findViewById(R.id.imgeview_picture);
+        imageview_picture = findViewById(R.id.imageview_picture);
         marker_point_view = findViewById(R.id.marker_point_view);
 
         annulla_interest_point = findViewById(R.id.annulla_interest_point);
@@ -160,18 +200,37 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         imageview_map.isClickable();
         imageview_map.hasOnClickListeners();
 
+        //ottieni il nome del progetto corrente dall'activity precendente per poter salvare il doc sotto il progetto utente corrente
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+
+            project_name = extras.getString(getString(R.string.extra_project_name));
+            user_company = extras.getString(getString(R.string.extra_user_company));
+            document_type = extras.getString(getString(R.string.extra_document_type));
+            Log.d(TAG, "onCreate: "+user_company+"/"+ project_name+"/"+document_type);
+
+        }else {
+
+            project_name = "Cantiere Udine Est";
+            user_company = "DreamSphereStudio";
+            document_type = "Generic_Document";
+            Log.d(TAG, "onCreate: "+user_company+"/"+ project_name+"/"+document_type);
+        }
+
+
         ArrayList mapPins = new ArrayList();
         imageview_map.setPins(mapPins);
         imageview_map.setOnLongClickListener(this);
         imageview_map.setOnTouchListener(this);
 
         marker_list = new ArrayList<>();
-        current_marker_bitmap = null;
+        current_marker_photo_bitmap = null;
         current_photo_canvas = new Canvas();
         current_photo_rectangle = new Rect();
         current_photo_position = new PointF();
         photo_scaled_height =0;
         current_photo_description ="";
+
 
 
         //add image to the image field
@@ -232,7 +291,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                         switch(motionEvent.getAction()) {
                             case MotionEvent.ACTION_DOWN:
                                 // touch down code
-                                Log.d(TAG, "onTouchDown: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                //Log.d(TAG, "onTouchDown: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
                                 x_down=motionEvent.getX();
                                 y_down=motionEvent.getY();
                                 current_photo_position = new PointF(x_down, y_down);
@@ -240,12 +299,13 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
                             case MotionEvent.ACTION_MOVE:
                                 // touch move code
-                                Log.d(TAG, "onTouchMove: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
+                                //Log.d(TAG, "onTouchMove: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
                                 x_move=motionEvent.getX();
                                 y_move=motionEvent.getY();
                                 rectangle = new Rect((int) Math.round(x_down),(int) Math.round(y_down), (int) Math.round(x_move),(int) Math.round(y_move));
-                                imageview_picture.setRectangle(rectangle);
+                                //imageview_picture.setRectangle(rectangle);
                                 current_photo_rectangle = rectangle;
+                                //Log.d(TAG, "onTouch: ");
 
                                 imageview_picture.post(new Runnable(){
                                     public void run(){
@@ -257,9 +317,8 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                             case MotionEvent.ACTION_UP:
                                 // touch up code
                                 Log.d(TAG, "onTouchUp: coordinates: X,Y: (" +motionEvent.getX() +"," +motionEvent.getY()+")");
-                                Log.d(TAG, "onClick: imgeview_picture: "+ imageview_picture.getWidth() +"x"+ imageview_picture.getHeight());
-
-                                Log.d(TAG, "onTouch: rettangolo finale disegnato: "+current_photo_rectangle);
+                                Log.d(TAG, "onClick: current_photo_canvas: photo taken: "+ current_photo_canvas.getWidth() +"x"+ current_photo_canvas.getHeight());
+                                Log.d(TAG, "onTouch: rettangolo finale disegnato on photo: "+current_photo_rectangle);
 
                                 break;
                         }
@@ -282,7 +341,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         save_interest_point.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //aggiungi l'immagine e la descrizione alla recycler view, resetta la view dell'immagine imgeview_picture
+/*              //aggiungi l'immagine e la descrizione alla recycler view, resetta la view dell'immagine imgeview_picture
                 //prendi l'immagine del marker e salvalo come bitmap
                 paint = new Paint();
                 rect = new Rect();
@@ -292,29 +351,83 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
 
 
-                //current_marker_bitmap =  Bitmap.createBitmap((int)PHOTO_WIDTH, photo_scaled_height, Bitmap.Config.ARGB_8888);
+                //current_marker_bitmap =  Bitmap.createBitmap((int)PHOTO_WIDTH, photo_scaled_height, Bitmap.Config.ARGB_8888);*/
+/*Canvas test = new Canvas(current_marker_photo_bitmap);
+                Log.d(TAG, "onClick: current_marker_bitmap: "+ current_marker_photo_bitmap.getWidth() +"x"+ current_marker_photo_bitmap.getHeight());
 
-                Canvas test = new Canvas(current_marker_bitmap);
-                Log.d(TAG, "onClick: current_marker_bitmap: "+current_marker_bitmap.getWidth() +"x"+current_marker_bitmap.getHeight());
-
-
-                double scale_preview_factor =(float)current_marker_bitmap.getWidth()/imageview_picture.getWidth();
+                double scale_preview_factor =(float) current_marker_photo_bitmap.getWidth()/imageview_picture.getWidth();
                 Log.d(TAG, "onClick: scale_preview_factor: "+scale_preview_factor);
-                int rectangle_height = current_photo_rectangle.bottom-current_photo_rectangle.top;
-                test.drawRect(integer_value_scaled(current_photo_rectangle.left, scale_preview_factor),integer_value_scaled(current_photo_rectangle.top+rectangle_height*2, scale_preview_factor),
-                        integer_value_scaled(current_photo_rectangle.right, scale_preview_factor) ,integer_value_scaled(current_photo_rectangle.bottom+rectangle_height*2, scale_preview_factor), paint);
+                //int rectangle_height = current_photo_rectangle.bottom-current_photo_rectangle.top;
+                //test.drawRect(integer_value_scaled(current_photo_rectangle.left, scale_preview_factor),integer_value_scaled(current_photo_rectangle.top+rectangle_height*2, scale_preview_factor),
+                //        integer_value_scaled(current_photo_rectangle.right, scale_preview_factor) ,integer_value_scaled(current_photo_rectangle.bottom+rectangle_height*2, scale_preview_factor), paint);
                 Log.d(TAG, "onClick: rettangolo in miniatura: " +current_photo_rectangle.left+","+current_photo_rectangle.top+","+ current_photo_rectangle.right+","+current_photo_rectangle.bottom);
-                test.save();
+                Rect test_rect = new Rect (rectangle.left, rectangle.top, rectangle.right, rectangle.bottom);
+                test.drawRect(test_rect, paint);
+
+                test.save();*/
+/*                //*******************************************************************************************************
+
+                current_marker_bitmap= current_marker_bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+                double imageScale = (float) (PREVIEW_PHOTO / current_marker_bitmap.getWidth());
+                int scaled_height =(int) Math.round(current_marker_bitmap.getHeight()*imageScale);
+                current_marker_bitmap = Bitmap.createScaledBitmap(current_marker_bitmap, (int)PREVIEW_PHOTO, scaled_height,false);
+                photo_canvas.drawBitmap( current_marker_bitmap,0,0, new Paint());
 
 
-                marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_marker_bitmap));
-                recyclerView_marker_adapter = new RecyclerView_Marker_Adapter(context, marker_list);
-                recyclerView_marker_adapter.notifyDataSetChanged();
-                recyclerview_markers.setLayoutManager(new LinearLayoutManager(context));
-                recyclerview_markers.setAdapter(recyclerView_marker_adapter);
+                Log.d(TAG, "onClick: ??? "+rectangle.right+"-"+rectangle.left +"="+(rectangle.right-rectangle.left));
+                    int marker_width = rectangle.right-rectangle.left;
+                    int marker_height = rectangle.bottom-rectangle.top;
+                    Log.d(TAG, "onClick: photo passed: "+marker_width+"x"+marker_height);
+                    Log.d(TAG, "onClick: rectangle passed: "+rectangle.left+","+rectangle.top+","+rectangle.right+","+rectangle.bottom);
+                    int left_scaled = Math.round((float) (rectangle.left*imageScale-marker_width/2));
+                    int top_scaled = Math.round((float) (rectangle.top*imageScale+marker_height/2));
+                    int right_scaled = Math.round((float) (rectangle.right*imageScale-marker_width/2));
+                    int bottom_scaled = Math.round((float) (rectangle.bottom*imageScale+marker_height/2));
+                    Rect scaled_rectangle = new Rect(left_scaled, top_scaled, right_scaled, bottom_scaled);
+                Log.d(TAG, "onClick: scaled rectangle: "+scaled_rectangle);
+                    photo_canvas.drawRect(scaled_rectangle, paint);
+
+                    photo_canvas.save();
 
 
-                alertDialog(false);
+
+ */
+/*                Canvas photo_canvas = new Canvas(current_marker_photo_bitmap);
+                current_marker_photo_bitmap = current_marker_photo_bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+                double imageScale = (float) (PREVIEW_PHOTO / current_marker_photo_bitmap.getWidth());
+                int scaled_height =(int) Math.round(current_marker_photo_bitmap.getHeight()*imageScale);
+                Bitmap scaledPhotoImage = Bitmap.createScaledBitmap(current_marker_photo_bitmap, (int)PREVIEW_PHOTO, scaled_height,false);
+                photo_canvas.drawBitmap( scaledPhotoImage,0,200, new Paint());
+
+                Bitmap bitmap_rectangle = BitmapFactory.decodeResource(context.getResources(),R.drawable.ic_rectangle);
+                int marker_width = rectangle.right-rectangle.left;
+                int marker_height = rectangle.bottom-rectangle.top;
+                float pointerXscaled = (float) (lastKnownX*imageScale-marker_width/2);
+                float pointerYscaled = (float) (lastKnownY*imageScale+marker_height/2);
+                Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
+                photo_canvas.drawBitmap(bitmap_rectangle,pointerXscaled, pointerYscaled, null);
+                photo_canvas.save();*/
+                //*********************************************************************************************************/
+                Log.d(TAG, "onClick: "+current_photo_file.getName());
+                Log.d(TAG, "onClick: "+current_photo_file.getAbsolutePath());
+                marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_photo_file));
+                if(marker_list.size()>0){
+                    //marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_marker_photo_bitmap));
+                    //imageview_picture.setImage(R.drawable.buttons_background_white_stroke_white_bkg);
+                    //edittext_marker_description.setText("");
+                    recyclerView_marker_adapter = new RecyclerView_Marker_Adapter(context, marker_list);
+                    recyclerView_marker_adapter.notifyDataSetChanged();
+                    recyclerview_markers.setLayoutManager(new LinearLayoutManager(context));
+                    recyclerview_markers.setAdapter(recyclerView_marker_adapter);
+
+                    alertDialog(false);
+                    edittext_marker_description.setText("");
+                    hideSoftKeyboard();
+                }
+
+
 
             }
         });
@@ -333,6 +446,11 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     }
 
+    private void hideSoftKeyboard() {
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+    }
+
     private void buttonAnnullaMarker() {
 
         annulla_interest_point.setOnClickListener(new View.OnClickListener() {
@@ -345,6 +463,8 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 pinCounter--;
             }
         });
+        edittext_marker_description.setText("");
+        hideSoftKeyboard();
 
     }
 
@@ -519,29 +639,84 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             Log.d(TAG, "onActivityResult: result code 100");
         } else if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK)
         {
-            //prendi l'immagine e scalala in modo che sia in formato max HD: 1280x720 con il param H variabile
+            Log.d(TAG, "onActivityResult: PHOTO TAKEN");
+
+            //l'immagine bitmap viene caricata nell'imageview con Glide come preview temporanea
             Bitmap photo = (Bitmap) data.getExtras().get("data");
+            enablePhotoTakenVIew(true);
+            RequestOptions options = new RequestOptions()
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .error(R.drawable.square_blue_box);
+            imageview_picture.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
 
-            Log.d(TAG, "onActivityResult: bitmap size: "+photo.getWidth()+"x"+photo.getHeight());
+            Glide
+                    .with(context)
+                    .asBitmap()
+                    .load(photo)
+                    .apply(options)
+                    .into(imageview_picture);
 
-            double imageScale = (float) (PHOTO_WIDTH / photo.getWidth());
-            photo_scaled_height =(int) Math.round(photo.getHeight()*imageScale);
+            //salva l'immagine come jpg in galleria
+            photo_name = denominazione_opera.getText().toString()+"_marker_photo"+mapPinsArrayList.size();
+            Log.d(TAG, "onActivityResult: "+photo_name);
 
-            button_add_picture.setVisibility(View.GONE);
-            button_draw_circle.setVisibility(View.VISIBLE);
+            FileOutputStream out=null;
+            ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
 
-            scaledPictureImage = Bitmap.createScaledBitmap(photo, (int)PHOTO_WIDTH, photo_scaled_height,false);
-            Log.d(TAG, "onActivityResult: scaled: "+scaledPictureImage.getWidth()+"x"+scaledPictureImage.getHeight());
-            imageview_picture.setImage(ImageSource.bitmap(scaledPictureImage));
-            current_marker_bitmap =scaledPictureImage;
-
-            Canvas canvas = new Canvas(scaledPictureImage);
-
-            //canvas.drawBitmap( scaledPictureImage,0,0, new Paint());
-            Log.d(TAG, "onActivityResult: canvas: "+canvas.getWidth()+"x"+canvas.getHeight());
-            canvas.save();
-            buttonDrawRectangleOnPicture(canvas);
+            int permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                // We don't have permission so prompt the user
+                ActivityCompat.requestPermissions(
+                        this,
+                        PERMISSIONS_STORAGE,
+                        REQUEST_EXTERNAL_STORAGE
+                );
+            }else {
+                ContextWrapper cw = new ContextWrapper(getApplicationContext());
+                File directory = cw.getDir("photos", Context.MODE_PRIVATE);
+                file_photo_directory = directory;
+                Log.d(TAG, "onActivityResult: "+directory);
+                File newfile = new File(directory, photo_name+".jpg");
+                if (newfile.exists()) {
+                    newfile.delete();
+                }
+                Log.d("path", newfile.toString());
+                FileOutputStream fos = null;
+                try {
+                    Log.d(TAG, "onActivityResult: ok");
+                    fos = new FileOutputStream(newfile);
+                    photo.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                    fos.flush();
+                    fos.close();
+                    current_photo_file=newfile;
+                    Log.d(TAG, "onActivityResult: "+current_photo_file.getName());
+                    Log.d(TAG, "onActivityResult: "+current_photo_file.getAbsolutePath());
+                } catch (java.io.IOException e) {
+                    Log.d(TAG, "onActivityResult: porcodio");
+                    e.printStackTrace();
+                }
+            }
         }
+    }
+
+    private void createFolder() {
+        Log.d(TAG, "createFolder: ");
+
+        folderPath = Environment.getExternalStorageDirectory() + "/SmartDocs";
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            File makers_photo_directory = new File(folderPath);
+            makers_photo_directory.mkdirs();
+            Log.d(TAG, "createFolder: creato folder");
+        }
+    }
+
+    public void changeAddToDrawIcon(){
+
+        button_add_picture.setVisibility(View.GONE);
+        button_draw_circle.setVisibility(View.VISIBLE);
     }
 
     private void buttonGeneratePDF() {
@@ -564,9 +739,10 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     private void createPDF(String string_worksite_name) throws FileNotFoundException {
         String pdf_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String currentDate = sdf.format(new Date());
         Log.d(TAG, "createPDF: writing to: "+pdf_path);
-        String pdf_name ="CompanyName_DocumentType12"+".pdf";
+        String pdf_name =user_company+"_"+project_name+string_worksite_name+"_"+currentDate+".pdf";
         File file = new File(pdf_path, pdf_name);
         Log.d(TAG, "createPDF: "+file.getName()+ " path: "+file.getAbsolutePath());
 
@@ -600,14 +776,34 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
         //solo se ci sono effettivamente pin/markers allora disegnali sulla mappa
         if (arrayListPins.size()>0){
-            //bitmap del numero nei drawable, scalato per la scala dell'immagine
-            Bitmap bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_1);
-            int marker_width = bitmap_number.getWidth();
-            int marker_height = bitmap_number.getHeight();
-            float pointerXscaled = (float) (lastKnownX*imageScale-marker_width/2);
-            float pointerYscaled = (float) (lastKnownY*imageScale+marker_height/2);
-            Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
-            canvas.drawBitmap(bitmap_number,pointerXscaled, pointerYscaled, null);
+            for(int i=0; i<arrayListPins.size(); i++){
+                //bitmap del numero nei drawable, scalato per la scala dell'immagine
+                Bitmap bitmap_number = null;
+                switch (i){
+                    case 0: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_1);
+                    case 1: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_2);
+                    case 2: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_3);
+                    case 3: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_4);
+                    case 4: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_5);
+                    case 5: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_6);
+                    case 6: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_7);
+                    case 7: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_8);
+                    case 8: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_9);
+                    case 9: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_10);
+                    case 10: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_11);
+                    case 11: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_12);
+                }
+
+
+                int marker_width = bitmap_number.getWidth();
+                int marker_height = bitmap_number.getHeight();
+                float pointerXscaled = (float) (lastKnownX*imageScale-marker_width/2);
+                float pointerYscaled = (float) (lastKnownY*imageScale+marker_height/2);
+                Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
+                canvas.drawBitmap(bitmap_number,pointerXscaled, pointerYscaled, null);
+
+            }
+
         }
 
 
@@ -627,13 +823,23 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         try {
             document.writeTo(new FileOutputStream(file));
         } catch (IOException e) {
+            Log.d(TAG, "createPDF: ERRORE CREAZIONE PDF");
             e.printStackTrace();
         }
 
         document.close();
+        deleteRecursive(file_photo_directory);
         Log.d(TAG, "createPDF: DOCUMENT CLOSED");
         addNotification(file);
 
+    }
+
+    void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+
+        fileOrDirectory.delete();
     }
 
     public void addNotification(File file) {
@@ -724,6 +930,19 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         return false;
     }
 
+    public void enablePhotoTakenVIew(boolean enabled){
+
+        if (enabled){
+            imgeview_dialog_image.setVisibility(View.INVISIBLE);
+            imageview_picture.setVisibility(View.VISIBLE);
+        }else{
+            imgeview_dialog_image.setVisibility(View.VISIBLE);
+            imageview_picture.setVisibility(View.INVISIBLE);
+        }
+
+
+    }
+
     public void alertDialog(Boolean enabled){
 
         if (enabled==true){
@@ -734,6 +953,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             scrollviewalertDialog.setVisibility(View.VISIBLE);
             dialog_background.animate().alpha(1.0f).setDuration(1000);
             marker_point_view.animate().alpha(1.0f).setDuration(1000);
+            enablePhotoTakenVIew(false);
 
         }else {
             dialog_background.setVisibility(View.GONE);
@@ -742,8 +962,8 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             scrollviewalertDialog.setVisibility(View.GONE);
             dialog_background.animate().alpha(0.0f).setDuration(1000);
             marker_point_view.animate().alpha(0.0f).setDuration(1000);
-            button_add_picture.setVisibility(View.VISIBLE);
-            button_draw_circle.setVisibility(View.GONE);
+            //button_add_picture.setVisibility(View.VISIBLE);
+            //button_draw_circle.setVisibility(View.GONE);
 
 
         }

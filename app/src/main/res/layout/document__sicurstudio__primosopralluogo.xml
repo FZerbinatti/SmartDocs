@@ -29,6 +29,7 @@
             android:paddingVertical="10dp"
             android:selectAllOnFocus="true"
             android:textAlignment="center"
+            android:textColor="@color/black"
             android:textColorHint="@color/black"
             android:textSize="@dimen/edittext_dimension"
             app:layout_constraintEnd_toEndOf="parent"
@@ -46,6 +47,7 @@
             android:hint="Indirizzo Cantiere "
             android:paddingVertical="10dp"
             android:selectAllOnFocus="true"
+            android:textColor="@color/black"
             android:textAlignment="center"
             android:textColorHint="@color/black"
             android:textSize="@dimen/edittext_dimension"
@@ -256,10 +258,19 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <ImageView
+                    android:id="@+id/imageview_picture"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/square_round_corners_dark"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-
-                <com.dreamsphere.smartdocs.ImageModLibraries.RectangleView2
-                    android:id="@+id/imgeview_picture"
+<!--                <com.dreamsphere.smartdocs.ImageModLibraries.RectangleView2
+                    android:id="@+id/imageview_picture"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_margin="10dp"
@@ -269,7 +280,7 @@
                     app:layout_constraintDimensionRatio="1:1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent" />-->
 
                 <ImageButton
                     android:id="@+id/button_draw_circle"
@@ -329,7 +340,7 @@
                     android:textColorHint="@color/light_grey"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imgeview_picture" />
+                    app:layout_constraintTop_toBottomOf="@+id/imageview_picture" />
 
 
                 <Button

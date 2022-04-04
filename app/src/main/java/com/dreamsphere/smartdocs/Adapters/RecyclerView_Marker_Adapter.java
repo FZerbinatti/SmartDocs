@@ -1,10 +1,11 @@
 package com.dreamsphere.smartdocs.Adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,27 +14,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.dreamsphere.smartdocs.Interfaces.RecyclerViewClickListener;
 import com.dreamsphere.smartdocs.Models.Marker;
 import com.dreamsphere.smartdocs.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerView_Marker_Adapter.ViewHolder> {
 
@@ -68,28 +66,68 @@ public class RecyclerView_Marker_Adapter extends RecyclerView.Adapter <RecyclerV
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-
+//aggiusta il path
         String marker_description = markersList.get(i).getDescription();
-        Bitmap marker_image = markersList.get(i).getMarker_image();
-        Log.d(TAG, "onBindViewHolder: recyclerview image: "+marker_image.getWidth()+"x"+marker_image.getHeight());
+        File marker_image_file = markersList.get(i).getFile();
+
+        Log.d(TAG, "onBindViewHolder: file1: "+marker_image_file);
+        Log.d(TAG, "onBindViewHolder: file1: "+marker_image_file.getName());
+        //Log.d(TAG, "onBindViewHolder: recyclerview image: "+marker_image.getWidth()+"x"+marker_image.getHeight());
 
         thisMarker.setDescription(marker_description);
-        thisMarker.setMarker_image(marker_image);
+        thisMarker.setFile(marker_image_file);
 
         viewHolder.textview_marker_description.setText(marker_description);
         viewHolder.textView_number.setText(String.valueOf(i+1));
 
+        //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        //marker_image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+        //viewHolder.image_marker_photo.setImageBitmap(marker_image);
+
+
+        FileInputStream fiStream = null;
+        try {
+            fiStream = new FileInputStream(marker_image_file);
+            Log.d(TAG, "onBindViewHolder: "+fiStream);
+            Log.d(TAG, "onBindViewHolder: "+fiStream);
+            Log.d(TAG, "onBindViewHolder: "+fiStream.toString());
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+
         RequestOptions options = new RequestOptions()
-                .centerInside()
+                .centerCrop()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(true)
                 .error(R.drawable.square_blue_box);
                 viewHolder.image_marker_photo.setBackgroundTintList(ColorStateList.valueOf(Color.BLACK));
-        Glide
+
+
+/*        Glide
                 .with(context)
-                .load(marker_image)
+                .load(Uri.fromFile(marker_image_file))
                 .apply(options)
-                .into(viewHolder.image_marker_photo);
+                .into(viewHolder.image_marker_photo);*/
+
+        Glide
+                .with(context).load(marker_image_file).listener(new RequestListener<Drawable>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                return false;
+            }
+
+            @Override
+            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+
+                return false;
+            }
+        })
+                .apply(options)
+                .thumbnail(0.1f).into(viewHolder.image_marker_photo);
     }
 
     @Override
