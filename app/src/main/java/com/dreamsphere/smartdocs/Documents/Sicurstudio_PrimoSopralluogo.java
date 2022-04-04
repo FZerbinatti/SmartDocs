@@ -792,6 +792,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                     case 9: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_10);
                     case 10: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_11);
                     case 11: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_12);
+
                 }
 
 
