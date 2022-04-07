@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dreamsphere.smartdocs.Activities.MainActivity;
+import com.dreamsphere.smartdocs.Activities.ProjectsActivity;
 import com.dreamsphere.smartdocs.R;
 import com.dreamsphere.smartdocs.Services.PreferencesData;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,7 +22,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -88,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 String email = login_email.getText().toString();
                 String password = login_password.getText().toString();
-                FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
 
                 if (email.isEmpty()){
@@ -104,13 +102,13 @@ public class LoginActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
 
                             Log.d(TAG, "onComplete: task? "+task.isSuccessful());
-                            Log.d(TAG, "onComplete: user? "+ firebaseUser);
-                            if (task.isSuccessful() && (firebaseUser != null )){
+                            //Log.d(TAG, "onComplete: user? "+ firebaseUser);
+                            if (task.isSuccessful()){
 
                                 login_progressbar.setVisibility(View.GONE);
                                 PreferencesData.setUserLoggedInStatus(getApplicationContext(),true);
 
-                                Intent intent = new Intent( LoginActivity.this, MainActivity.class);
+                                Intent intent = new Intent( LoginActivity.this, ProjectsActivity.class);
                                 startActivity(intent);
                                 finish();
 

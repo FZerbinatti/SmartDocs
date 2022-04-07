@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera"/>
     <uses-permission android:name="android.permission.CAMERA" />
@@ -39,16 +40,12 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <activity android:name=".Activities.SelectDocumentActivity" />
+        <activity android:name=".Activities.AddDocumentActivity" />
         <activity android:name=".Activities.SelectDocumentTypeActivity" />
         <activity android:name=".AdminActivities.NewCompanyDocumentActivity" />
-        <activity android:name=".Activities.ProjectActivity" />
+        <activity android:name=".Activities.DocumentsActivity" />
         <activity android:name=".Documents.Sicurstudio_PrimoSopralluogo">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name=".Activities.SettingsActivity" />
         <activity android:name=".AutenticationServices.RegisterActivity" />
@@ -58,7 +55,13 @@
         <activity android:name=".AdminActivities.AdminAccessActivity" />
         <activity android:name=".AutenticationServices.ResetPasswordActivity" />
         <activity android:name=".AutenticationServices.LoginActivity" />
-        <activity android:name=".Activities.MainActivity">
+        <activity android:name=".Activities.ProjectsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
         </activity>
 
 

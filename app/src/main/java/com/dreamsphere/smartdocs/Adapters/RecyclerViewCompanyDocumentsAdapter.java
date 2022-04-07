@@ -12,8 +12,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dreamsphere.smartdocs.Activities.MainActivity;
-import com.dreamsphere.smartdocs.Activities.ProjectActivity;
+import com.dreamsphere.smartdocs.Activities.DocumentsActivity;
 import com.dreamsphere.smartdocs.Models.Document;
 import com.dreamsphere.smartdocs.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,7 +20,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
-import static com.dreamsphere.smartdocs.Activities.ProjectActivity.TAG;
+import static com.dreamsphere.smartdocs.Activities.DocumentsActivity.TAG;
 
 public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<RecyclerViewCompanyDocumentsAdapter.ViewHolder> {
 
@@ -32,10 +31,10 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
     private String project_name;
     private Document document;
 
-    // data is passed into the constructor
-    public RecyclerViewCompanyDocumentsAdapter(Context context, List<Document> data, String project_name, Document document) {
+    // documents is passed into the constructor
+    public RecyclerViewCompanyDocumentsAdapter(Context context, List<Document> documents, String project_name, Document document) {
         this.mInflater = LayoutInflater.from(context);
-        this.mData = data;
+        this.mData = documents;
         this.context = context;
         this.project_name = project_name;
         this.document = document;
@@ -78,6 +77,14 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+                    //se il documento_nome è uguale al nome Sicurstudio_primosopralluogo allora clicklistenr porta ad aprire quella classe
+                }
+            });
+
+/*            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
                     new AlertDialog.Builder(context)
                             .setTitle(context.getString(R.string.confermare))
                             .setMessage(context.getString(R.string.alert_dialog_1)+document.getDocument_name() +context.getString(R.string.alert_dialog_2)+ project_name +"'' ?")
@@ -89,9 +96,10 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
                                             .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                             .child(context.getString(R.string.firebase_user_projects))
                                             .child(project_name)
+                                            .child(document.getDocument_name())
                                             .setValue(document);
 
-                                    Intent intent = new Intent(context, ProjectActivity.class);
+                                    Intent intent = new Intent(context, DocumentsActivity.class);
                                     intent.putExtra(context.getString(R.string.extra_project_name),project_name);
                                     context.startActivity(intent);
 
@@ -103,7 +111,7 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
                             .setIcon(android.R.drawable.alert_light_frame)
                             .show();
                 }
-            });
+            });*/
         }
 
         @Override

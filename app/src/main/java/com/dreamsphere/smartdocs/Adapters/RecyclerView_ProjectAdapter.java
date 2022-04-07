@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dreamsphere.smartdocs.Activities.ProjectActivity;
+import com.dreamsphere.smartdocs.Activities.DocumentsActivity;
 import com.dreamsphere.smartdocs.Interfaces.RecyclerViewClickListener;
 
 import com.dreamsphere.smartdocs.R;
@@ -95,7 +95,7 @@ public class RecyclerView_ProjectAdapter extends RecyclerView.Adapter <RecyclerV
                 @Override
                 public void onClick(View view) {
 
-                    Intent intent = new Intent(context, ProjectActivity.class);
+                    Intent intent = new Intent(context, DocumentsActivity.class);
 
                     String projectName = projectsList.get(getAdapterPosition());
                     Log.d(TAG, "onClick: ééé== "+projectName);

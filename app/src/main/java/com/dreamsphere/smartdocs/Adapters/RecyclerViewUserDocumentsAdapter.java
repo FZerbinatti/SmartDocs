@@ -55,7 +55,12 @@ public class RecyclerViewUserDocumentsAdapter extends RecyclerView.Adapter<Recyc
         ViewHolder(View itemView) {
             super(itemView);
             myTextView = itemView.findViewById(R.id.item_picker_project_name);
-            itemView.setOnClickListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });
         }
 
         @Override

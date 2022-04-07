@@ -25,7 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class ProjectActivity extends AppCompatActivity {
+public class DocumentsActivity extends AppCompatActivity {
     public static final String TAG ="Main Activity";
 
     TextView go_to_admin, textview_project_name;
@@ -74,7 +74,7 @@ public class ProjectActivity extends AppCompatActivity {
         settings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ProjectActivity.this, SettingsActivity.class);
+                Intent intent = new Intent(DocumentsActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
         });
@@ -93,7 +93,7 @@ public class ProjectActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //apri un'activity dove viene visualizzata una lista con i documenti accessibili a questo utente
-                Intent intent = new Intent(ProjectActivity.this, SelectDocumentTypeActivity.class);
+                Intent intent = new Intent(DocumentsActivity.this, SelectDocumentTypeActivity.class);
                 intent.putExtra(getString(R.string.extra_project_name),project_name);
                 startActivity(intent);
             }
@@ -107,14 +107,19 @@ public class ProjectActivity extends AppCompatActivity {
         // load da firebase le regioni
         DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getString(R.string.firebase_user_projects));
+                .child(getString(R.string.firebase_user_projects))
+                .child(project_name);
 
         datareference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
                     String user_document = snapshot.getKey().toString();
-                    all_user_documents.add(user_document);
+                    if (!user_document.equals(" ")){
+
+                        all_user_documents.add(user_document);
+                    }
+
                 }
                 loadRecyclerviewDocuments(all_user_documents);
             }

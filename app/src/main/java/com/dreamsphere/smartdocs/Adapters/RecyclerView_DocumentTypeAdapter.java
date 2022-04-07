@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dreamsphere.smartdocs.Activities.SelectDocumentActivity;
+import com.dreamsphere.smartdocs.Activities.AddDocumentActivity;
 import com.dreamsphere.smartdocs.Interfaces.RecyclerViewClickListener;
 import com.dreamsphere.smartdocs.R;
 import com.google.firebase.storage.FirebaseStorage;
@@ -96,7 +96,7 @@ public class RecyclerView_DocumentTypeAdapter extends RecyclerView.Adapter <Recy
                 @Override
                 public void onClick(View view) {
 
-                    Intent intent = new Intent(context, SelectDocumentActivity.class);
+                    Intent intent = new Intent(context, AddDocumentActivity.class);
 
                     /*String projectName = projectsList.get(getAdapterPosition());
                     Log.d(TAG, "onClick: ééé== "+projectName);*/

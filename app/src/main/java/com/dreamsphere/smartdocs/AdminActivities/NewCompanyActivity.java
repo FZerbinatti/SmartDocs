@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dreamsphere.smartdocs.Models.Company;
+import com.dreamsphere.smartdocs.Models.CompanyInfo;
 import com.dreamsphere.smartdocs.Models.Document;
 import com.dreamsphere.smartdocs.R;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -53,10 +54,11 @@ public class NewCompanyActivity extends AppCompatActivity {
                         .child(getString(R.string.firebase_whitelist))
                         .setValue(" ");
 
-                //crea nel database un'istanza di azienda vuota
-                Company company = new Company(" ",company_name," "," "," "," "," "," ", new ArrayList<Document>());
+                //crea nel database un'istanza di azienda vuota      public Company(String company_whitelist, CompanyInfo company_info, ArrayList<Document> company_documents) {
+                Company company = new Company(" " , new CompanyInfo(company_name," "," "," "," "," "," "), new ArrayList<Document>());
                 FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
                         .child(company_name)
+                        .child(getString(R.string.firebase_company_info))
                         .setValue(company).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

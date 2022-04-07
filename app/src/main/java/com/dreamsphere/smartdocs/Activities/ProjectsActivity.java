@@ -1,6 +1,5 @@
 package com.dreamsphere.smartdocs.Activities;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -9,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -35,7 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity  {
+public class ProjectsActivity extends AppCompatActivity  {
     public static final String TAG ="Main Activity";
 
     TextView go_to_admin;
@@ -66,24 +64,25 @@ public class MainActivity extends AppCompatActivity  {
         main_progressbar.setVisibility(View.VISIBLE);
         counter =0;
         context = this;
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        reference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users));
-        userID = user.getUid();
+
 
         //Controlla se lo user è dentro l'app, se non è loggato, torna alla pagina di login
-        isUserAlreadyLogged();
+        if(isUserAlreadyLogged()){
+            user = FirebaseAuth.getInstance().getCurrentUser();
+            reference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users));
+            userID = user.getUid();
+            //pagina delle impostazioni dell'account (logout)
+            settings();
 
-        //pagina delle impostazioni dell'account (logout)
-        settings();
+            //metodo per caricare gli elementi della recyclerview dal cloud
+            loadUserProjects();
 
-        //metodo per caricare gli elementi della recyclerview dal cloud
-        loadUserProjects();
+            //metodo per andare alla pagina per aggiungere pool di utenti e aziende, accessibile solo all'admin
+            goToAdmin();
 
-        //metodo per andare alla pagina per aggiungere pool di utenti e aziende, accessibile solo all'admin
-        goToAdmin();
-
-        //pulsante per aggiungere un nuovo progetto
-        addProject();
+            //pulsante per aggiungere un nuovo progetto
+            addProject();
+        }
 
     }
 
@@ -91,7 +90,7 @@ public class MainActivity extends AppCompatActivity  {
         settings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                Intent intent = new Intent(ProjectsActivity.this, SettingsActivity.class);
                 startActivity(intent);
             }
         });
@@ -116,10 +115,9 @@ public class MainActivity extends AppCompatActivity  {
                                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                 .child(getString(R.string.firebase_user_projects))
                                 .child(projectName)
-                                .child(getString(R.string.firebase_user_project_name))
-                                .setValue(projectName);
+                                .setValue(" ");
 
-                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                        Intent intent = new Intent(ProjectsActivity.this, ProjectsActivity.class);
                         intent.putExtra(getString(R.string.extra_project_name),projectName);
                         startActivity(intent);
 
@@ -185,7 +183,7 @@ public class MainActivity extends AppCompatActivity  {
                 Log.d(TAG, "onTouch: counter: "+counter);
                 if (counter==10){
                     Log.d(TAG, "onTouch: counter 3");
-                    Intent intent = new Intent(MainActivity.this, AdminAccessActivity.class);
+                    Intent intent = new Intent(ProjectsActivity.this, AdminAccessActivity.class);
                     startActivity(intent);
                 }
                 return false;
@@ -194,15 +192,18 @@ public class MainActivity extends AppCompatActivity  {
 
     }
 
-    private void isUserAlreadyLogged() {
+    private boolean isUserAlreadyLogged() {
         //togliere il commento epr fare un logout da codice
          //PreferencesData.setUserLoggedInStatus(getApplicationContext(),false);
         Log.d(TAG, "isUserAlreadyLogged: "+ PreferencesData.getUserLoggedInStatus(this));
         if ( !PreferencesData.getUserLoggedInStatus(this) || FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid()) == null ) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            Intent intent = new Intent(ProjectsActivity.this, LoginActivity.class);
             startActivity(intent);
+        }else {
+            return true;
         }
+        return false;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.dreamsphere.smartdocs.Documents;
 
-import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -31,26 +30,19 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureRequest;
-import android.media.Image;
-import android.media.ImageReader;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
@@ -68,21 +60,30 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.transition.Transition;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.dreamsphere.smartdocs.Adapters.RecyclerView_Marker_Adapter;
 import com.dreamsphere.smartdocs.ImageModLibraries.GPSTracker;
 import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
+import com.dreamsphere.smartdocs.Models.CompanyInfo;
 import com.dreamsphere.smartdocs.Models.Coordinates;
+import com.dreamsphere.smartdocs.Models.Document;
 import com.dreamsphere.smartdocs.Models.Marker;
 import com.dreamsphere.smartdocs.R;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -142,6 +143,15 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
     private File current_photo_file;
     ArrayList<File> photos_taken_files;
     File file_photo_directory;
+    int altezza_photo_marker_pdf =0;
+    String current_marker_description;
+    int logo_height;;
+
+    //Dati aziendali
+    String company_name;
+    String company_info_1;
+    String company_info_2;
+    String company_logo;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -200,6 +210,8 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         imageview_map.isClickable();
         imageview_map.hasOnClickListeners();
 
+
+
         //ottieni il nome del progetto corrente dall'activity precendente per poter salvare il doc sotto il progetto utente corrente
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -208,6 +220,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
             user_company = extras.getString(getString(R.string.extra_user_company));
             document_type = extras.getString(getString(R.string.extra_document_type));
             Log.d(TAG, "onCreate: "+user_company+"/"+ project_name+"/"+document_type);
+            loadCOmpanyData(user_company);
 
         }else {
 
@@ -245,6 +258,12 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         buttonAnnullaMarker();
 
         buttonSaveMarker();
+
+
+
+    }
+
+    private void loadCOmpanyData(String user_company) {
 
 
 
@@ -423,12 +442,13 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                     recyclerview_markers.setAdapter(recyclerView_marker_adapter);
 
                     alertDialog(false);
+                    current_marker_description = edittext_marker_description.getText().toString();
                     edittext_marker_description.setText("");
                     hideSoftKeyboard();
                 }
 
 
-
+                hideSoftKeyboard();
             }
         });
     }
@@ -463,6 +483,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
                 pinCounter--;
             }
         });
+
         edittext_marker_description.setText("");
         hideSoftKeyboard();
 
@@ -724,34 +745,150 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         create_pdf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String string_denominazione_opera = denominazione_opera.getText().toString();
-
-                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
-                try {
-                    createPDF(string_denominazione_opera);
-                    Toast.makeText(context, "PDF Generato, cartella Download", Toast.LENGTH_SHORT).show();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                Log.d(TAG, "onClick: loading company info for company: "+company_name);
+                loadCompanyInfo(company_name);
             }
         });
     }
 
-    private void createPDF(String string_worksite_name) throws FileNotFoundException {
+
+
+    private void loadCompanyInfo(String company_name) {
+
+        company_name= "DreamSphereStudio";
+
+        DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
+                .child(company_name)
+                .child(getString(R.string.firebase_company_info));
+
+        datareference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
+
+                CompanyInfo company_document = dataSnapshot.getValue(CompanyInfo.class);
+                String string_denominazione_opera = denominazione_opera.getText().toString();
+
+                ActivityCompat.requestPermissions(Sicurstudio_PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
+                try {
+                    createPDF(string_denominazione_opera, company_document);
+                    Toast.makeText(context, "PDF Generato, cartella Download", Toast.LENGTH_SHORT).show();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@androidx.annotation.NonNull DatabaseError databaseError) {
+            }
+        });
+
+    }
+
+    private void createPDF(String string_worksite_name, CompanyInfo company_info) throws IOException {
+
+        // dove salvare il pdf
         String pdf_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy_HH.mm", Locale.getDefault());
         String currentDate = sdf.format(new Date());
-        Log.d(TAG, "createPDF: writing to: "+pdf_path);
-        String pdf_name =user_company+"_"+project_name+string_worksite_name+"_"+currentDate+".pdf";
+        // nome del documento
+        String pdf_name =user_company+"_"+project_name.replace(" ", "")+"_"+string_worksite_name+"_"+currentDate+".pdf";
         File file = new File(pdf_path, pdf_name);
+
         Log.d(TAG, "createPDF: "+file.getName()+ " path: "+file.getAbsolutePath());
 
         //Genera un file PDF con altezza e larghezza prefissata di 1 pagina
         PdfDocument document = new PdfDocument();
-        PdfDocument.PageInfo pageInfo1 = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,1).create();
-        PdfDocument.Page page = document.startPage(pageInfo1);
-        Canvas canvas = page.getCanvas();
+        PdfDocument.PageInfo page_1_settings = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,1).create();
+        PdfDocument.Page page_1 = document.startPage(page_1_settings);
+        Canvas page_1_canvas = page_1.getCanvas();
 
+        //***************************************************************  H E A D E R  ***********************************************************************************
+
+        // COMPANY LOGO
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference company_logo_reference = storage.getReference(getString(R.string.firebase_companies_logos));
+        final long ONE_MEGABYTE = 1024 * 1024;
+
+        company_logo_reference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap company_logo_bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                Log.d(TAG, "onSuccess: received logo: "+company_logo_bitmap);
+                Bitmap scaled_company_logo = scaleCenterCrop(company_logo_bitmap, 150,150) ;
+                page_1_canvas.drawBitmap(scaled_company_logo,20,20, new Paint());
+                logo_height= scaled_company_logo.getHeight();
+                Log.d(TAG, "onSuccess: logo_height: "+logo_height);
+            }
+        });
+
+        // COMPANY INFOS
+
+/*        company_logo= company_logo.copy(Bitmap.Config.ARGB_8888, true);
+        Log.d(TAG, "createPDF: logo: " +company_logo.getWidth()+"x"+company_logo.getHeight());
+        double logo_scale = (float) (150.0f / company_logo.getHeight());
+        Log.d(TAG, "createPDF: logo_scale: "+logo_scale);
+        int logo_scaled_width =(int) Math.round(company_logo.getWidth()*logo_scale);
+        Log.d(TAG, "createPDF: logo_scaled_width: " +(int) Math.round(company_logo.getHeight()) + "*" +logo_scale +"= "+logo_scaled_width);
+        Bitmap scaled_company_logo = Bitmap.createScaledBitmap(company_logo, (int)150, logo_scaled_width,false);*/
+
+
+        // DOCUMENT TITLE
+        Paint title_paint = new Paint();
+        title_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        title_paint.setTextAlign(Paint.Align.CENTER);
+        title_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        title_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_header));
+        // DOCUMENT SUBTITLE
+        Paint subtitle_paint = new Paint();
+        subtitle_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        subtitle_paint.setTextAlign(Paint.Align.CENTER);
+        subtitle_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_subheader));
+        // DOCUMENT TEXT BOLD
+        Paint text_bold_paint = new Paint();
+        text_bold_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        text_bold_paint.setTextAlign(Paint.Align.CENTER);
+        text_bold_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_page_title));
+        // MARKERS DESCRIPTIONS
+        Paint text_descriptions_paint = new Paint();
+        text_descriptions_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        text_descriptions_paint.setTextAlign(Paint.Align.LEFT);
+        text_descriptions_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_subheader));
+
+        // DOCUMENT TEXT
+        Paint text_common_paint = new Paint();
+        text_common_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        text_common_paint.setTextAlign(Paint.Align.LEFT);
+        text_common_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_page_title));
+
+        //prendi il punto centrale della pagina per centrarlo
+        int width_center =(int) Math.round(A4_WIDTH*0.5f);
+        Log.d(TAG, "createPDF: page width: "+ A4_WIDTH + " center? "+width_center);
+        int h1=70;
+        page_1_canvas.drawText(user_company+" - "+string_worksite_name, width_center, h1, title_paint);
+        int h2=h1+50;
+        page_1_canvas.drawText(project_name, width_center, h2, subtitle_paint);
+        int h3=h2+40;
+        page_1_canvas.drawText(currentDate, width_center, h3, text_bold_paint);
+
+        //dati cantiere
+        int h4=logo_height+30;
+        page_1_canvas.drawText("Nome cantiere: "+ denominazione_opera.getText().toString(), 20, h4, text_common_paint);
+        int h5=h4+30;
+        page_1_canvas.drawText("Indirizzo cantiere: "+ indirizzo_cantiere.getText().toString(), 20, h5, text_common_paint);
+        int h6=h5+30;
+        page_1_canvas.drawText("Coordinate cantiere: N: "+ coordinates_north.getText().toString()+ " E: "+coordinates_est.getText().toString(), 20, h6, text_common_paint);
+
+
+
+
+        //*************************************************************** E N D  H E A D E R  ***********************************************************************************
+
+
+        // MAPPA DELLA ZONA CON I MARKER
 
         //devo fare il decode Resource della cosa che è adesso dentro l'imageview
         Log.d(TAG, "createPDF: picturePath: "+picturePath);
@@ -759,7 +896,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         //per trasformarla in una bitmap scalabile:
         bitmap_map_image= bitmap_map_image.copy(Bitmap.Config.ARGB_8888, true);
 
-        //crea una canvas con la bitmap dellìimmagine uploaddata, scalala in modo che la height della immagine mappa sia 1/2 della height tot del pdf, e la width sia scalata
+        //crea una page_1Canvas con la bitmap dellìimmagine uploaddata, scalala in modo che la height della immagine mappa sia 1/2 della height tot del pdf, e la width sia scalata
         // e la height sia divisa tra il rapport tra la width vera dell'img/2480
         double imageScale = (float) (A4_WIDTH / bitmap_map_image.getWidth());
 
@@ -769,57 +906,163 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         int scaled_height =(int) Math.round(bitmap_map_image.getHeight()*imageScale);
         Log.d(TAG, "createPDF: scaled_height:"+scaled_height);
         scaledMapImage = Bitmap.createScaledBitmap(bitmap_map_image, (int)A4_WIDTH, scaled_height,false);
-        canvas.drawBitmap( scaledMapImage,0,200, new Paint());
+        int altezza_mappa_in_pdf =logo_height+20+20;
+        page_1_canvas.drawBitmap( scaledMapImage,0,altezza_mappa_in_pdf, new Paint());
+        altezza_photo_marker_pdf=altezza_mappa_in_pdf+scaledMapImage.getHeight()+50;
 
-        // usa le coordinate dei pointer per applicare le immagini dei pointer sopra l'immagine uploaddata
-
+        Bitmap current_photo_marker_pdf;
 
         //solo se ci sono effettivamente pin/markers allora disegnali sulla mappa
         if (arrayListPins.size()>0){
             for(int i=0; i<arrayListPins.size(); i++){
                 //bitmap del numero nei drawable, scalato per la scala dell'immagine
                 Bitmap bitmap_number = null;
-                switch (i){
-                    case 0: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_1);
-                    case 1: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_2);
-                    case 2: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_3);
-                    case 3: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_4);
-                    case 4: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_5);
-                    case 5: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_6);
-                    case 6: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_7);
-                    case 7: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_8);
-                    case 8: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_9);
-                    case 9: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_10);
-                    case 10: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_11);
-                    case 11: bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_12);
 
-                }
+                if (i==0){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_1);}
+                else if (i==1){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_2);}
+                else if (i==2){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_3);}
+                else if (i==3){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_4);}
+                else if (i==4){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_5);}
+                else if (i==5){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_6);}
+                else if (i==6){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_7);}
+                else if (i==7){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_8);}
+                else if (i==8){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_9);}
+                else if (i==9){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_10);}
+                else if (i==10){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_11);}
+                else if (i==11){bitmap_number = BitmapFactory.decodeResource(context.getResources(),R.drawable.pin_12);}
 
-
+                // usa le coordinate dei pointer per applicare le immagini dei pointer sopra l'immagine uploaddata
                 int marker_width = bitmap_number.getWidth();
                 int marker_height = bitmap_number.getHeight();
                 float pointerXscaled = (float) (lastKnownX*imageScale-marker_width/2);
                 float pointerYscaled = (float) (lastKnownY*imageScale+marker_height/2);
                 Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
-                canvas.drawBitmap(bitmap_number,pointerXscaled, pointerYscaled, null);
+                page_1_canvas.drawBitmap(bitmap_number, pointerXscaled, pointerYscaled, null);
 
+            }
+            // fai una tabella con dentro le immagini dei marker distanziate su altezza_photo_marker_pdf
+            Paint table_paint = new Paint();
+            table_paint.setColor(ContextCompat.getColor(context, R.color.black));
+            table_paint.setStrokeWidth(3);
+            table_paint.setStyle(Paint.Style.STROKE);
+
+            if (marker_list.size()>0){
+                page_1_canvas.drawRect(new Rect(0,altezza_photo_marker_pdf, (int) (A4_WIDTH),altezza_photo_marker_pdf+500), table_paint);
+                //metti l'immagine in centercrop a sinistra
+                current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(0).getFile().getAbsolutePath()), 500, 500);
+                page_1_canvas.drawBitmap( current_photo_marker_pdf,0,altezza_photo_marker_pdf, new Paint());
+                // aggiungi il testo descrizione dell'immagine
+                Log.d(TAG, "createPDF: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"+current_marker_description);
+                page_1_canvas.drawText(current_marker_description, current_photo_marker_pdf.getWidth()+40, altezza_photo_marker_pdf+40, text_descriptions_paint);
+
+                //***************************************************************  F O O T E R  ***********************************************************************************
+
+
+                // DOCUMENT TITLE
+
+                Paint footer_paint = new Paint();
+                footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+                footer_paint.setTextAlign(Paint.Align.CENTER);
+                footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
+                page_1_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
+                page_1_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
+
+                //*************************************************************** E N D  F O O T E R  ***********************************************************************************
+
+                document.finishPage(page_1);
+
+            }
+
+
+
+            //ho finito la prima pagina con il primo marker, se ci sono tot marker,aggiungi e compila la second apagina
+            if (marker_list.size()>1&&marker_list.size()<=4){
+                PdfDocument.PageInfo page_2_settings = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,2).create();
+                PdfDocument.Page page_2 = document.startPage(page_2_settings);
+                Canvas page_2_canvas = page_2.getCanvas();
+                for(int i=2; i<=marker_list.size(); i++){
+                    page_2_canvas.drawRect(new Rect(0, ((i - 2) * 500), (int) (A4_WIDTH),500), table_paint);
+                    current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(i-1).getFile().getAbsolutePath()), 500, 500);
+                    page_2_canvas.drawBitmap( current_photo_marker_pdf,0, ((i - 2) * 500), new Paint());
+                    page_2_canvas.drawText(current_marker_description, current_photo_marker_pdf.getWidth()+50, ((i - 2) * 500)+50, text_descriptions_paint);
+                    if (i==marker_list.size()){
+                        //***************************************************************  F O O T E R  ***********************************************************************************
+                        Paint footer_paint = new Paint();
+                        footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+                        footer_paint.setTextAlign(Paint.Align.CENTER);
+                        footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                        footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
+                        page_2_canvas.drawText("Nome azienda - Dati fiscali azienda, fax - telefono +39 1234567890", width_center, (float) (A4_HEIGHT-25), footer_paint);
+                        //*************************************************************** E N D  F O O T E R  ***********************************************************************************
+                        document.finishPage(page_2);}
+                }
+
+
+
+            }else if (marker_list.size()>4&&marker_list.size()<=7){
+                PdfDocument.PageInfo page_3_settings = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,3).create();
+                PdfDocument.Page page_3 = document.startPage(page_3_settings);
+                Canvas page_3_canvas = page_3.getCanvas();
+                for(int i=5; i<=marker_list.size(); i++){
+                    page_3_canvas.drawRect(new Rect(0, ((i - 5) * 500), (int) (A4_WIDTH),500), table_paint);
+                    current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(i-1).getFile().getAbsolutePath()), 500, 500);
+                    page_3_canvas.drawBitmap( current_photo_marker_pdf,0, ((i - 5) * 500), new Paint());
+                    page_3_canvas.drawText(current_marker_description, current_photo_marker_pdf.getWidth()+20, ((i - 5) * 500), text_descriptions_paint);
+                    if (i==marker_list.size()){ document.finishPage(page_3);}
+                }
+
+            }
+
+            else if (marker_list.size()>7&&marker_list.size()<=10){
+                PdfDocument.PageInfo page_4_settings = new PdfDocument.PageInfo.Builder((int)A4_WIDTH, (int)A4_HEIGHT,4).create();
+                PdfDocument.Page page_4 = document.startPage(page_4_settings);
+                Canvas page_4_canvas = page_4.getCanvas();
+                for(int i=8; i<=marker_list.size(); i++){
+                    page_4_canvas.drawRect(new Rect(0, ((i - 8) * 500), (int) (A4_WIDTH),500), table_paint);
+                    current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(i-1).getFile().getAbsolutePath()), 500, 500);
+                    page_4_canvas.drawBitmap( current_photo_marker_pdf,0, ((i - 8) * 500), new Paint());
+                    page_4_canvas.drawText(current_marker_description, current_photo_marker_pdf.getWidth()+20, ((i - 8) * 500), text_descriptions_paint);
+                    if (i==marker_list.size()){ document.finishPage(page_4);}
+                }
+
+            }else if (marker_list.size()>10&&marker_list.size()<=12) {
+                PdfDocument.PageInfo page_5_settings = new PdfDocument.PageInfo.Builder((int) A4_WIDTH, (int) A4_HEIGHT, 5).create();
+                PdfDocument.Page page_5 = document.startPage(page_5_settings);
+                Canvas page_5_canvas = page_5.getCanvas();
+                for (int i = 11; i <= marker_list.size(); i++) {
+                    page_5_canvas.drawRect(new Rect(0, ((i - 11) * 500), (int) (A4_WIDTH), 500), table_paint);
+                    current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(i-1).getFile().getAbsolutePath()), 500, 500);
+                    page_5_canvas.drawBitmap(current_photo_marker_pdf, 0, ((i - 11) * 500), new Paint());
+                    page_5_canvas.drawText(current_marker_description, current_photo_marker_pdf.getWidth() + 20, ((i - 11) * 500), text_descriptions_paint);
+                    if (i == marker_list.size()) {
+                        document.finishPage(page_5);
+                    }
+                }
             }
 
         }
 
 
-        Paint paint = new Paint();
-        paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        paint.setTextSize(60);
-        //prendi il punto centrale della pagina per centrarlo
-        int width_center =(int) Math.round(bitmap_map_image.getWidth()*imageScale*0.5f);
-        Log.d(TAG, "createPDF: page width: "+ A4_WIDTH + " center? "+width_center);
-        canvas.drawText("CompanyName - "+string_worksite_name, width_center, 100, paint);
+        // IMAGES WITH DESCRIPTION
 
 
-        document.finishPage(page);
+/*        //***************************************************************  F O O T E R  ***********************************************************************************
+
+
+        // DOCUMENT TITLE
+
+        Paint footer_paint = new Paint();
+        footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        footer_paint.setTextAlign(Paint.Align.CENTER);
+        footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
+        page_1_canvas.drawText("Nome azienda - Dati fiscali azienda, fax - telefono +39 1234567890", width_center, (float) (A4_HEIGHT-25), footer_paint);
+
+        //*************************************************************** E N D  F O O T E R  ************************************************************************************/
+
+
+        // FINE DOCUMENTO - GENERAZIONE
 
         try {
             document.writeTo(new FileOutputStream(file));
@@ -833,6 +1076,39 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
         Log.d(TAG, "createPDF: DOCUMENT CLOSED");
         addNotification(file);
 
+    }
+
+    public Bitmap scaleCenterCrop(Bitmap source, int newHeight, int newWidth) {
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        // Compute the scaling factors to fit the new height and width, respectively.
+        // To cover the final image, the final scaling will be the bigger
+        // of these two.
+        float xScale = (float) newWidth / sourceWidth;
+        float yScale = (float) newHeight / sourceHeight;
+        float scale = Math.max(xScale, yScale);
+
+        // Now get the size of the source bitmap when scaled
+        float scaledWidth = scale * sourceWidth;
+        float scaledHeight = scale * sourceHeight;
+
+        // Let's find out the upper left coordinates if the scaled bitmap
+        // should be centered in the new size give by the parameters
+        float left = (newWidth - scaledWidth) / 2;
+        float top = (newHeight - scaledHeight) / 2;
+
+        // The target rectangle for the new, scaled version of the source bitmap will now
+        // be
+        RectF targetRect = new RectF(left, top, left + scaledWidth, top + scaledHeight);
+
+        // Finally, we create a new bitmap of the specified size and draw our new,
+        // scaled bitmap onto it.
+        Bitmap dest = Bitmap.createBitmap(newWidth, newHeight, source.getConfig());
+        Canvas canvas = new Canvas(dest);
+        canvas.drawBitmap(source, null, targetRect, null);
+
+        return dest;
     }
 
     void deleteRecursive(File fileOrDirectory) {
@@ -946,7 +1222,7 @@ public class Sicurstudio_PrimoSopralluogo extends AppCompatActivity implements V
 
     public void alertDialog(Boolean enabled){
 
-        if (enabled==true){
+        if (enabled){
 
             dialog_background.setVisibility(View.VISIBLE);
             marker_point_view.setVisibility(View.VISIBLE);

@@ -27,7 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class SelectDocumentActivity extends AppCompatActivity {
+public class AddDocumentActivity extends AppCompatActivity {
     public static final String TAG ="SelectDocumentAc";
     Integer counter;
     ImageButton settings_button;
@@ -89,6 +89,10 @@ public class SelectDocumentActivity extends AppCompatActivity {
 
     }
 
+
+
+    //qui devo far comparire la lista classe Documents con il nome solo se appare nella lista documenti company, on tap listener su quello mi porta direttamente al docuemnto aperto,
+    //salvare il documento crea il pdf, lo mette sul cloud e sotto Documents appaiono i documenti giò compilati
 
 
 

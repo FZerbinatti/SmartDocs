@@ -4,4 +4,13 @@
     <dimen name="edittext_dimension">20sp</dimen>
     <dimen name="small_text_dimens">16sp</dimen>
 
+
+    <dimen name="dimens_text_header">20sp</dimen>
+    <dimen name="dimens_text_subheader">16sp</dimen>
+    <dimen name="dimens_text_footer">8sp</dimen>
+    <dimen name="dimens_text_page_norm">8sp</dimen>
+    <dimen name="dimens_text_page_title">10sp</dimen>
+
+
+
 </resources>
