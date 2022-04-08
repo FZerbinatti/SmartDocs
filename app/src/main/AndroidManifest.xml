@@ -44,7 +44,7 @@
         <activity android:name=".Activities.SelectDocumentTypeActivity" />
         <activity android:name=".AdminActivities.NewCompanyDocumentActivity" />
         <activity android:name=".Activities.DocumentsActivity" />
-        <activity android:name=".Documents.Sicurstudio_PrimoSopralluogo">
+        <activity android:name=".Documents.PrimoSopralluogo">
 
         </activity>
         <activity android:name=".Activities.SettingsActivity" />

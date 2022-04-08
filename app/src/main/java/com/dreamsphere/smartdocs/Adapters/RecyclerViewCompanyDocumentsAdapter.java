@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamsphere.smartdocs.Activities.DocumentsActivity;
+import com.dreamsphere.smartdocs.Documents.PrimoSopralluogo;
 import com.dreamsphere.smartdocs.Models.Document;
 import com.dreamsphere.smartdocs.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -79,6 +80,14 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
                 public void onClick(View view) {
 
                     //se il documento_nome è uguale al nome Sicurstudio_primosopralluogo allora clicklistenr porta ad aprire quella classe
+                    Log.d(TAG, "onClick: nome clicekd? "+document.getDocument_name());
+                    if (document.getDocument_name().equals("Primo Sopralluogo")){
+                        Intent intent = new Intent(context, PrimoSopralluogo.class);
+                        intent.putExtra(context.getString(R.string.extra_project_name),project_name);
+                        intent.putExtra(context.getString(R.string.extra_user_company),document.getDocument_company());
+                        intent.putExtra(context.getString(R.string.extra_document_type),document.getDocument_type());
+                        context.startActivity(intent);
+                    }
                 }
             });
 
