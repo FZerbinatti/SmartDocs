@@ -72,6 +72,8 @@
     <string name="channel_name">pdf_notification_channel</string>
     <string name="channel_description">channel for pdf creation notification</string>
     <string name="firebase_companies_logos">CompaniesLogos</string>
+    <string name="nome_prj_invalido">Inserire un nome progetto valido!</string>
+    <string name="aggiungi_foto">Aggiungi una foto</string>
 
 
 </resources>

@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:background="@color/b6"
         android:scaleType="centerCrop"
-        android:src="@drawable/background_gradient"
+        android:src="@drawable/background_gradient_orange"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
 

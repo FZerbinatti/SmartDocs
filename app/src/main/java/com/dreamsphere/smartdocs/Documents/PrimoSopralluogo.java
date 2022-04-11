@@ -212,6 +212,8 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         edittext_marker_description = findViewById(R.id.edittext_marker_description);
         button_microphone = findViewById(R.id.button_microphone);
 
+        current_photo_file = new File("","");
+
 
 
 
@@ -391,6 +393,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         save_interest_point.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
 /*              //aggiungi l'immagine e la descrizione alla recycler view, resetta la view dell'immagine imgeview_picture
                 //prendi l'immagine del marker e salvalo come bitmap
                 paint = new Paint();
@@ -460,26 +463,32 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 photo_canvas.drawBitmap(bitmap_rectangle,pointerXscaled, pointerYscaled, null);
                 photo_canvas.save();*/
                 //*********************************************************************************************************/
-                Log.d(TAG, "onClick: "+current_photo_file.getName());
-                Log.d(TAG, "onClick: "+current_photo_file.getAbsolutePath());
-                marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_photo_file));
-                if(marker_list.size()>0){
-                    //marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_marker_photo_bitmap));
-                    //imageview_picture.setImage(R.drawable.buttons_background_white_stroke_white_bkg);
-                    //edittext_marker_description.setText("");
-                    recyclerView_marker_adapter = new RecyclerView_Marker_Adapter(context, marker_list);
-                    recyclerView_marker_adapter.notifyDataSetChanged();
-                    recyclerview_markers.setLayoutManager(new LinearLayoutManager(context));
-                    recyclerview_markers.setAdapter(recyclerView_marker_adapter);
 
-                    alertDialog(false);
-                    current_marker_description = edittext_marker_description.getText().toString();
-                    edittext_marker_description.setText("");
+                if (current_photo_file.getName().isEmpty()){
+                    Toast.makeText(context,getResources().getString(R.string.aggiungi_foto) , Toast.LENGTH_SHORT).show();
+                }else {
+                    Log.d(TAG, "onClick: "+current_photo_file.getName());
+                    Log.d(TAG, "onClick: "+current_photo_file.getAbsolutePath());
+                    marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_photo_file));
+                    if(marker_list.size()>0){
+                        //marker_list.add(new Marker(edittext_marker_description.getText().toString(), current_marker_photo_bitmap));
+                        //imageview_picture.setImage(R.drawable.buttons_background_white_stroke_white_bkg);
+                        //edittext_marker_description.setText("");
+                        recyclerView_marker_adapter = new RecyclerView_Marker_Adapter(context, marker_list);
+                        recyclerView_marker_adapter.notifyDataSetChanged();
+                        recyclerview_markers.setLayoutManager(new LinearLayoutManager(context));
+                        recyclerview_markers.setAdapter(recyclerView_marker_adapter);
+
+                        alertDialog(false);
+                        current_marker_description = edittext_marker_description.getText().toString();
+                        edittext_marker_description.setText("");
+                        hideSoftKeyboard();
+                    }
+
+
                     hideSoftKeyboard();
                 }
 
-
-                hideSoftKeyboard();
             }
         });
     }
@@ -511,6 +520,9 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 //togli il marker corrente
 
                 imageview_map.deletePin(pinCounter-1);
+
+                arrayListPins.remove(pinCounter-1);
+                //mapPinsArrayList.remove(pinCounter-1);
                 pinCounter--;
             }
         });
@@ -825,8 +837,6 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         });
     }
 
-
-
     private void loadCompanyInfo(String company_name) {
 
         company_name= "DreamSphereStudio";
@@ -1018,7 +1028,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                         int marker_height = bitmap_number.getHeight();
 
                         float pointerXscaled = (float) (arrayListPins.get(i).getX()*imageScale-marker_width/2);
-                        float pointerYscaled = (float) (arrayListPins.get(i).getY()*imageScale+marker_height/2+altezza_mappa_in_pdf);
+                        float pointerYscaled = (float) (arrayListPins.get(i).getY()*imageScale+marker_height+h3+20);
                         Log.d(TAG, "createPDF: pointer coordinates: X: "+pointerXscaled +" Y:"+pointerYscaled);
                         page_1_canvas.drawBitmap(bitmap_number, pointerXscaled, pointerYscaled, null);
 
@@ -1322,14 +1332,20 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
 
     @Override
     public boolean onLongClick(View view) {
+        pinCounter++;
+        Log.d(TAG, "onLongClick: pin counter: "+pinCounter);
+
+
         if (view.getId() == R.id.imageview_map) {
+
+
             if (pinCounter ==12){
                 Toast.makeText(this, "Max number of Marker is 12!", Toast.LENGTH_SHORT).show();
             }else {
                 arrayListPins.add(new Coordinates(lastKnownX, lastKnownY));
                 mapPin1 = new MapPin(lastKnownX,lastKnownY,pinCounter);
                 Log.d(TAG, "onLongClick: coordinates: X: "+lastKnownX+ " , Y: "+lastKnownY);
-                pinCounter++;
+
                 mapPinsArrayList.add(mapPin1);
                 imageview_map.setPins(mapPinsArrayList);
 

@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_gradient_yellow"
+
     tools:context=".Activities.SettingsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,7 +31,7 @@
                 android:layout_marginVertical="10dp"
                 android:layout_marginStart="10dp"
                 android:text="App Logout"
-                android:textColor="@color/blue_light"
+                android:textColor="@color/black"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

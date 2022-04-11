@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:background="@color/b6"
         android:scaleType="centerCrop"
-        android:src="@drawable/background_sky2"
+        android:src="@drawable/background_gradient_yellow"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="0dp" />
 
@@ -46,9 +46,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:fontFamily="@font/simplex"
+        android:fontFamily="@font/robotothin"
         android:text="@string/project_list"
-        android:textColor="@color/y2"
+        android:textColor="@color/black"
         android:textSize="35sp"
         android:gravity="start"
         app:layout_constraintEnd_toStartOf="@+id/settings_button"

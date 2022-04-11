@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dreamsphere.smartdocs.Adapters.RecyclerView_ProjectAdapter;
 import com.dreamsphere.smartdocs.AdminActivities.AdminAccessActivity;
@@ -110,16 +111,22 @@ public class ProjectsActivity extends AppCompatActivity  {
                 alert.setPositiveButton("Aggiungi", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String projectName = edittext.getText().toString();
-                        //se lo user clicca su aggiungi, adda il progetto al suo firebase nella sezione Users/UserID/Projects
-                        FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
-                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                .child(getString(R.string.firebase_user_projects))
-                                .child(projectName)
-                                .setValue(" ");
 
-                        Intent intent = new Intent(ProjectsActivity.this, ProjectsActivity.class);
-                        intent.putExtra(getString(R.string.extra_project_name),projectName);
-                        startActivity(intent);
+                        if (projectName.equals(" ")||projectName.isEmpty()){
+                            Toast.makeText(context, getResources().getString(R.string.nome_prj_invalido), Toast.LENGTH_SHORT).show();
+                        }else {
+                            //se lo user clicca su aggiungi, adda il progetto al suo firebase nella sezione Users/UserID/Projects
+                            FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
+                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child(getString(R.string.firebase_user_projects))
+                                    .child(projectName)
+                                    .setValue(" ");
+
+                            Intent intent = new Intent(ProjectsActivity.this, ProjectsActivity.class);
+                            intent.putExtra(getString(R.string.extra_project_name),projectName);
+                            startActivity(intent);
+                        }
+
 
                     }
                 });
