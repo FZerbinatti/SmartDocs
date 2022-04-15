@@ -54,7 +54,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -1051,6 +1050,33 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                         page_1_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
                         page_1_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
 
+                        //  S I G N A T U R E
+                        if (true){
+                            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+                            File directory = cw.getDir("signature", Context.MODE_PRIVATE);
+                            //String path = Environment.getExternalStorageDirectory().toString()+"/app_signature";
+                            File newfile = new File(directory, "signature_cropped"+".jpg");
+                            try {
+                                Bitmap bitmap_signature = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.fromFile(newfile));
+
+                                double sign_left = A4_WIDTH-bitmap_signature.getWidth()-2;
+                                double sign_top = A4_HEIGHT - bitmap_signature.getHeight()-2;
+
+                                Paint signature_paint = new Paint();
+                                signature_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+                                signature_paint.setTextAlign(Paint.Align.LEFT);
+                                signature_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                                signature_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_signature));
+
+                                page_1_canvas.drawBitmap(bitmap_signature, Math.round(sign_left),(float) sign_top, new Paint());
+                                page_1_canvas.drawRect(new Rect((int) Math.round(sign_left), (int) Math.round(sign_top)-2,(int) Math.round(sign_left+bitmap_signature.getWidth()+2),(int) Math.round(sign_top+bitmap_signature.getHeight()+2)), table_paint);
+                                page_1_canvas.drawText("Firma ABCDEFG123456", (int) Math.round(sign_left), (float) (sign_top-10), signature_paint);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+
                         //*************************************************************** E N D  F O O T E R  ***********************************************************************************
 
                         document.finishPage(page_1);
@@ -1185,31 +1211,16 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                     footer_paint.setTextAlign(Paint.Align.CENTER);
                     footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
                     footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                    page_1_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
-                    page_1_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
+                    page_1_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT - 35), footer_paint);
+                    page_1_canvas.drawText(company_info.getCompany_address() + " - " + company_info.getCompany_PIVA() + " - " + company_info.getCompany_number(), width_center, (float) (A4_HEIGHT - 15), footer_paint);
+
+
+
 
                     //*************************************************************** E N D  F O O T E R  ***********************************************************************************
 
                     document.finishPage(page_1);
                 }
-
-
-                // IMAGES WITH DESCRIPTION
-
-
-/*        //***************************************************************  F O O T E R  ***********************************************************************************
-
-
-        // DOCUMENT TITLE
-
-        Paint footer_paint = new Paint();
-        footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-        footer_paint.setTextAlign(Paint.Align.CENTER);
-        footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-        page_1_canvas.drawText("Nome azienda - Dati fiscali azienda, fax - telefono +39 1234567890", width_center, (float) (A4_HEIGHT-25), footer_paint);
-
-        //*************************************************************** E N D  F O O T E R  ************************************************************************************/
 
 
                 // FINE DOCUMENTO - GENERAZIONE

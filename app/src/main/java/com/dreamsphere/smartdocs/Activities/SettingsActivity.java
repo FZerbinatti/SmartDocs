@@ -83,14 +83,15 @@ public class SettingsActivity extends AppCompatActivity {
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("signature", Context.MODE_PRIVATE);
         //String path = Environment.getExternalStorageDirectory().toString()+"/app_signature";
-        Log.d("Files", "Path: " + directory);
+        File newfile = new File(directory, "signature_cropped"+".jpg");
+        /*Log.d("Files", "Path: " + directory);
         //File directory = new File(path);
         File[] files = directory.listFiles();
         Log.d("Files", "Size: "+ files.length);
         for (int i = 0; i < files.length; i++)
         {
             Log.d("Files", "FileName:" + files[i].getName());
-        }
+        }*/
 
         RequestOptions options = new RequestOptions()
                 .centerCrop()
@@ -102,7 +103,7 @@ public class SettingsActivity extends AppCompatActivity {
         Glide
                 .with(context)
                 .asBitmap()
-                .load(Uri.fromFile(files[1]))
+                .load(Uri.fromFile(newfile))
                 .apply(options)
                 .into(image_signature);
 
