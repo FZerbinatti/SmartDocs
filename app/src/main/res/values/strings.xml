@@ -74,6 +74,8 @@
     <string name="firebase_companies_logos">CompaniesLogos</string>
     <string name="nome_prj_invalido">Inserire un nome progetto valido!</string>
     <string name="aggiungi_foto">Aggiungi una foto</string>
+    <string name="aggiungi_firma">Aggiungi firma</string>
+    <string name="app_logout">Logout App</string>
 
 
 </resources>

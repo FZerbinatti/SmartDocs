@@ -231,14 +231,14 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
             user_company = extras.getString(getString(R.string.extra_user_company));
             document_type = extras.getString(getString(R.string.extra_document_type));
             Log.d(TAG, "onCreate: "+user_company+"/"+ project_name+"/"+document_type);
-            loadCOmpanyData(user_company);
+            //loadCompanyInfo(user_company);
 
         }else {
 
             project_name = "Cantiere Udine Est";
             user_company = "DreamSphereStudio";
             document_type = "Generic_Document";
-            Log.d(TAG, "onCreate: "+user_company+"/"+ project_name+"/"+document_type);
+
         }
 
 
@@ -294,12 +294,6 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 }
             }
         });
-    }
-
-    private void loadCOmpanyData(String user_company) {
-
-
-
     }
 
     private void buttonDrawRectangleOnPicture(Canvas canvas) {
@@ -803,7 +797,6 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 }else{
                     edittext_marker_description.setText(result.get(0));
                 }
-
             }
         }
     }

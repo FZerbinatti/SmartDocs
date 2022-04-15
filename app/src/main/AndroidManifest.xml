@@ -44,10 +44,11 @@
         <activity android:name=".Activities.SelectDocumentTypeActivity" />
         <activity android:name=".AdminActivities.NewCompanyDocumentActivity" />
         <activity android:name=".Activities.DocumentsActivity" />
-        <activity android:name=".Documents.PrimoSopralluogo">
-
-        </activity>
-        <activity android:name=".Activities.SettingsActivity" />
+        <activity android:name=".Documents.PrimoSopralluogo"/>
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat"/>
+        <activity android:name=".Activities.SettingsActivity"
+            android:usesCleartextTraffic="true"/>
         <activity android:name=".AutenticationServices.RegisterActivity" />
         <activity android:name=".AdminActivities.NewUsersPool" />
         <activity android:name=".AdminActivities.NewCompanyActivity" />
