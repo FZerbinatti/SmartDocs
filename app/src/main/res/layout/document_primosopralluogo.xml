@@ -168,6 +168,7 @@
                     android:id="@+id/imageview_map"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
+                    android:background="@drawable/square_round_corners_dark"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintDimensionRatio="16:9"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -211,13 +212,16 @@
                 android:gravity="center"
                 android:paddingHorizontal="15sp"
                 android:paddingVertical="10sp"
-                android:text="Generate PDF"
+                android:text="@string/generate_pdf"
                 android:textColor="@color/black"
                 android:textSize="20sp"
                 android:visibility="visible"
-                app:layout_constraintEnd_toEndOf="@+id/recyclerview_markers"
-                app:layout_constraintStart_toStartOf="@+id/recyclerview_markers"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/recyclerview_markers" />
+
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -67,10 +67,14 @@ import com.dreamsphere.smartdocs.ImageModLibraries.MapPin;
 import com.dreamsphere.smartdocs.ImageModLibraries.PinView2;
 import com.dreamsphere.smartdocs.Models.CompanyInfo;
 import com.dreamsphere.smartdocs.Models.Coordinates;
+import com.dreamsphere.smartdocs.Models.DocumentDownload;
 import com.dreamsphere.smartdocs.Models.Marker;
 import com.dreamsphere.smartdocs.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -78,6 +82,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -747,7 +752,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                     .into(imageview_picture);
 
             //salva l'immagine come jpg in galleria
-            photo_name = denominazione_opera.getText().toString()+"_marker_photo"+mapPinsArrayList.size();
+            photo_name = denominazione_opera.getText().toString().replace(" ","-")+"_marker_photo"+mapPinsArrayList.size();
             Log.d(TAG, "onActivityResult: "+photo_name);
 
             FileOutputStream out=null;
@@ -800,17 +805,6 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         }
     }
 
-    private void createFolder() {
-        Log.d(TAG, "createFolder: ");
-
-        folderPath = Environment.getExternalStorageDirectory() + "/SmartDocs";
-        File folder = new File(folderPath);
-        if (!folder.exists()) {
-            File makers_photo_directory = new File(folderPath);
-            makers_photo_directory.mkdirs();
-            Log.d(TAG, "createFolder: creato folder");
-        }
-    }
 
     public void changeAddToDrawIcon(){
 
@@ -842,7 +836,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
 
                 CompanyInfo company_document = dataSnapshot.getValue(CompanyInfo.class);
-                String string_denominazione_opera = denominazione_opera.getText().toString();
+                String string_denominazione_opera = denominazione_opera.getText().toString().replace(" ","-");
 
                 ActivityCompat.requestPermissions(PrimoSopralluogo.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
                 try {
@@ -863,14 +857,28 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
 
     }
 
+    public String getCurrentDate(){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy-HH.mm", Locale.getDefault());
+        String currentDate = sdf.format(new Date());
+        return currentDate;
+    }
+
+    public String getCurrentDateDay(){
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String currentDate = sdf.format(new Date());
+        return currentDate;
+    }
+
     private void createPDF(String string_worksite_name, CompanyInfo company_info) throws IOException {
 
         // dove salvare il pdf
         String pdf_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy-HH.mm", Locale.getDefault());
-        String currentDate = sdf.format(new Date());
+
+
         // nome del documento
-        String pdf_name =user_company+"_"+project_name.replace(" ", "")+"_"+string_worksite_name+"_"+currentDate+".pdf";
+        String pdf_name =user_company+"_"+project_name.replace(" ", "")+"_"+string_worksite_name+"_"+getCurrentDate()+".pdf";
         File file = new File(pdf_path, pdf_name);
 
         Log.d(TAG, "createPDF: "+file.getName()+ " path: "+file.getAbsolutePath());
@@ -956,7 +964,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 int h2=h1+50;
                 page_1_canvas.drawText(project_name, width_center, h2, subtitle_paint);
                 int h3=h2+40;
-                page_1_canvas.drawText(currentDate, width_center, h3, text_bold_paint);
+                page_1_canvas.drawText(getCurrentDate(), width_center, h3, text_bold_paint);
 
                 //dati cantiere
                 int h4=logo_height+100;
@@ -1227,6 +1235,49 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
 
                 try {
                     document.writeTo(new FileOutputStream(file));
+                    //salva doc sul cloud, se è già presente, sostituiscilo
+
+                    // Create a storage reference from our app
+                    StorageReference storageRef = storage.getReference();
+
+
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    String userID = user.getUid();
+                    Log.d(TAG, "onSuccess: genero un'istanza sul cloud con nome: "+userID+"/"+file.getName());
+                    StorageReference documentReference = storageRef.child(userID+"/"+file.getName());
+
+                    UploadTask taskPdfUpload = documentReference.putFile(Uri.fromFile(file));
+                    // Register observers to listen for when the download is done or if it fails
+                    taskPdfUpload.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                            Log.d("uploadFail", "" + exception);
+
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+
+
+                            Task<Uri> downloadUrl = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+
+                            DocumentDownload documentDownload = new DocumentDownload(denominazione_opera.getText().toString()+ " " +getCurrentDateDay(),file.getName());
+
+                            FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
+                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .child(getString(R.string.firebase_user_projects))
+                                    .child(project_name)
+                                    .child(denominazione_opera.getText().toString()+ " " +getCurrentDateDay())
+                                    .setValue(documentDownload);
+
+                            Log.d("downloadUrl", "" + downloadUrl);
+                        }
+                    });
+
+
+
                 } catch (IOException e) {
                     Log.d(TAG, "createPDF: ERRORE CREAZIONE PDF");
                     e.printStackTrace();

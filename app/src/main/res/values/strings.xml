@@ -76,6 +76,8 @@
     <string name="aggiungi_foto">Aggiungi una foto</string>
     <string name="aggiungi_firma">Aggiungi firma</string>
     <string name="app_logout">Logout App</string>
+    <string name="generate_pdf">Crea PDF</string>
+    <string name="salva_su_cloud">Salva su Cloud</string>
 
 
 </resources>

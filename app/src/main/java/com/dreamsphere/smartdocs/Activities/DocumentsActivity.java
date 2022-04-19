@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dreamsphere.smartdocs.Adapters.RecyclerViewUserDocumentsAdapter;
+import com.dreamsphere.smartdocs.Models.DocumentDownload;
 import com.dreamsphere.smartdocs.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -102,7 +103,7 @@ public class DocumentsActivity extends AppCompatActivity {
 
     private void loadUserDocuments() {
         //load della listview
-        ArrayList<String> all_user_documents = new ArrayList<>();
+        ArrayList<DocumentDownload> all_user_documents = new ArrayList<>();
 
         // load da firebase le regioni
         DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_users))
@@ -114,8 +115,8 @@ public class DocumentsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    String user_document = snapshot.getKey().toString();
-                    if (!user_document.equals(" ")){
+                    DocumentDownload user_document = snapshot.getValue(DocumentDownload.class);
+                    if (!user_document.getDocument_download_name().equals(" ")){
 
                         all_user_documents.add(user_document);
                     }
@@ -130,7 +131,7 @@ public class DocumentsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadRecyclerviewDocuments(ArrayList<String> all_regions) {
+    private void loadRecyclerviewDocuments(ArrayList<DocumentDownload> all_regions) {
 
         // set up the RecyclerView
         recyclerview_documents.setLayoutManager(new LinearLayoutManager(this));
