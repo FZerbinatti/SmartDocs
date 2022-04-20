@@ -1,5 +1,6 @@
 package com.dreamsphere.smartdocs.Documents;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -914,6 +915,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 page_1_canvas.drawBitmap(scaled_company_logo,20,20, new Paint());
                 page_1_canvas.drawRect(new Rect(20,20,scaled_company_logo.getWidth()+20,scaled_company_logo.getHeight()+20),table_paint );
                 logo_height= scaled_company_logo.getHeight();
+                int logo_width = scaled_company_logo.getWidth();
                 Log.d(TAG, "onSuccess: logo_height: "+logo_height);
 
 
@@ -931,18 +933,18 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 // DOCUMENT TITLE
                 Paint title_paint = new Paint();
                 title_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                title_paint.setTextAlign(Paint.Align.CENTER);
+                title_paint.setTextAlign(Paint.Align.LEFT);
                 title_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
                 title_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_header));
                 // DOCUMENT SUBTITLE
                 Paint subtitle_paint = new Paint();
                 subtitle_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                subtitle_paint.setTextAlign(Paint.Align.CENTER);
+                subtitle_paint.setTextAlign(Paint.Align.LEFT);
                 subtitle_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_subheader));
                 // DOCUMENT TEXT BOLD
                 Paint text_bold_paint = new Paint();
                 text_bold_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                text_bold_paint.setTextAlign(Paint.Align.CENTER);
+                text_bold_paint.setTextAlign(Paint.Align.LEFT);
                 text_bold_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_page_title));
                 // MARKERS DESCRIPTIONS
                 Paint text_descriptions_paint = new Paint();
@@ -958,21 +960,22 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
 
                 //prendi il punto centrale della pagina per centrarlo
                 int width_center =(int) Math.round(A4_WIDTH*0.5f)+50;
-                Log.d(TAG, "createPDF: page width: "+ A4_WIDTH + " center? "+width_center);
+                int title_left_margin = logo_width+40;
+                Log.d(TAG, "createPDF: page width: "+ A4_WIDTH + " center? "+title_left_margin);
                 int h1=70;
-                page_1_canvas.drawText(user_company+" - "+string_worksite_name, width_center, h1, title_paint);
+                page_1_canvas.drawText(user_company, title_left_margin, h1, title_paint);
                 int h2=h1+50;
-                page_1_canvas.drawText(project_name, width_center, h2, subtitle_paint);
+                page_1_canvas.drawText(string_worksite_name.replace("-"," ")+" - " +project_name, title_left_margin, h2, subtitle_paint);
                 int h3=h2+40;
-                page_1_canvas.drawText(getCurrentDate(), width_center, h3, text_bold_paint);
+                page_1_canvas.drawText(getCurrentDateDay() , title_left_margin, h3, subtitle_paint);
 
                 //dati cantiere
-                int h4=logo_height+100;
+                int h4=logo_height+80;
                 page_1_canvas.drawText("Nome cantiere: "+ denominazione_opera.getText().toString(), 20, h4, text_common_paint);
                 int h5=h4+40;
                 page_1_canvas.drawText("Indirizzo cantiere: "+ indirizzo_cantiere.getText().toString(), 20, h5, text_common_paint);
                 int h6=h5+40;
-                page_1_canvas.drawText("Coordinate cantiere: N: "+ coordinates_north.getText().toString()+ " E: "+coordinates_est.getText().toString(), 20, h6, text_common_paint);
+                page_1_canvas.drawText("Coordinate cantiere "+ coordinates_north.getText().toString()+ " "+coordinates_est.getText().toString(), 20, h6, text_common_paint);
 
 
 
@@ -998,7 +1001,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                 int scaled_height =(int) Math.round(bitmap_map_image.getHeight()*imageScale);
                 Log.d(TAG, "createPDF: scaled_height:"+scaled_height);
                 scaledMapImage = Bitmap.createScaledBitmap(bitmap_map_image, (int)A4_WIDTH, scaled_height,false);
-                int altezza_mappa_in_pdf =h6+20+20+100;
+                int altezza_mappa_in_pdf =h6+20+20+00;
                 page_1_canvas.drawBitmap( scaledMapImage,0,altezza_mappa_in_pdf, new Paint());
                 altezza_photo_marker_pdf=altezza_mappa_in_pdf+scaledMapImage.getHeight()+50;
 
@@ -1042,15 +1045,11 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                         current_photo_marker_pdf = scaleCenterCrop(BitmapFactory.decodeFile(marker_list.get(0).getFile().getAbsolutePath()), 500, 500);
                         page_1_canvas.drawBitmap( current_photo_marker_pdf,0,altezza_photo_marker_pdf, new Paint());
                         // aggiungi il testo descrizione dell'immagine
-                        Log.d(TAG, "createPDF: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"+current_marker_description);
                         page_1_canvas.drawText("1) "+marker_list.get(0).getDescription(), current_photo_marker_pdf.getWidth()+40, altezza_photo_marker_pdf+40, text_descriptions_paint);
 
                         //***************************************************************  F O O T E R  ***********************************************************************************
 
-
-                        // DOCUMENT TITLE
-
-                        Paint footer_paint = new Paint();
+/*                        Paint footer_paint = new Paint();
                         footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
                         footer_paint.setTextAlign(Paint.Align.CENTER);
                         footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
@@ -1078,12 +1077,21 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
 
                                 page_1_canvas.drawBitmap(bitmap_signature, Math.round(sign_left),(float) sign_top, new Paint());
                                 page_1_canvas.drawRect(new Rect((int) Math.round(sign_left), (int) Math.round(sign_top)-2,(int) Math.round(sign_left+bitmap_signature.getWidth()+2),(int) Math.round(sign_top+bitmap_signature.getHeight()+2)), table_paint);
-                                page_1_canvas.drawText("Firma ABCDEFG123456", (int) Math.round(sign_left), (float) (sign_top-10), signature_paint);
+                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                String userSignature = user.getUid().substring(0,6).toUpperCase()+getCurrentDate().replace(".","").replace("-","");
+
+                                page_1_canvas.drawText(userSignature, (int) Math.round(sign_left), (float) (sign_top-10), signature_paint);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                        }*/
+                        boolean justOnePage;
+                        if (marker_list.size()<2){
+                            justOnePage =true;
+                        }else {
+                            justOnePage=false;
                         }
-
+                        addFooter(page_1_canvas, width_center, company_info, justOnePage);
 
                         //*************************************************************** E N D  F O O T E R  ***********************************************************************************
 
@@ -1106,16 +1114,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                             if (i==marker_list.size()){
                                 //***************************************************************  F O O T E R  ***********************************************************************************
 
-
-                                // DOCUMENT TITLE
-
-                                Paint footer_paint = new Paint();
-                                footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                                footer_paint.setTextAlign(Paint.Align.CENTER);
-                                footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                                footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                                page_2_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
-                                page_2_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
+                                addFooter(page_2_canvas, width_center, company_info, true);
 
                                 //*************************************************************** E N D  F O O T E R  ***********************************************************************************
                                 document.finishPage(page_2);}
@@ -1134,18 +1133,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                             page_3_canvas.drawText(i+") "+marker_list.get(i-1).getDescription(), current_photo_marker_pdf.getWidth()+20, ((i - 5) * 500), text_descriptions_paint);
                             if (i==marker_list.size()){
                                 //***************************************************************  F O O T E R  ***********************************************************************************
-
-
-                                // DOCUMENT TITLE
-
-                                Paint footer_paint = new Paint();
-                                footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                                footer_paint.setTextAlign(Paint.Align.CENTER);
-                                footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                                footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                                page_3_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
-                                page_3_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
-
+                                addFooter(page_3_canvas, width_center, company_info, true);
                                 //*************************************************************** E N D  F O O T E R  ***********************************************************************************
                                 document.finishPage(page_3);}
                         }
@@ -1163,18 +1151,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                             page_4_canvas.drawText(i+") "+marker_list.get(i-1).getDescription(), current_photo_marker_pdf.getWidth()+20, ((i - 8) * 500), text_descriptions_paint);
                             if (i==marker_list.size()){
                                 //***************************************************************  F O O T E R  ***********************************************************************************
-
-
-                                // DOCUMENT TITLE
-
-                                Paint footer_paint = new Paint();
-                                footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                                footer_paint.setTextAlign(Paint.Align.CENTER);
-                                footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                                footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                                page_4_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
-                                page_4_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
-
+                                addFooter(page_4_canvas, width_center, company_info, true);
                                 //*************************************************************** E N D  F O O T E R  ***********************************************************************************
                                 document.finishPage(page_4);}
                         }
@@ -1190,18 +1167,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                             page_5_canvas.drawText(i+") "+marker_list.get(i-1).getDescription(), current_photo_marker_pdf.getWidth() + 20, ((i - 11) * 500), text_descriptions_paint);
                             if (i == marker_list.size()) {
                                 //***************************************************************  F O O T E R  ***********************************************************************************
-
-
-                                // DOCUMENT TITLE
-
-                                Paint footer_paint = new Paint();
-                                footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                                footer_paint.setTextAlign(Paint.Align.CENTER);
-                                footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                                footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                                page_5_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT-35), footer_paint);
-                                page_5_canvas.drawText(company_info.getCompany_address() +" - "+company_info.getCompany_PIVA() +" - "+company_info.getCompany_number() , width_center, (float) (A4_HEIGHT-15), footer_paint);
-
+                                addFooter(page_5_canvas, width_center, company_info, true);
                                 //*************************************************************** E N D  F O O T E R  ***********************************************************************************
                                 document.finishPage(page_5);
                             }
@@ -1212,22 +1178,17 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                     //***************************************************************  F O O T E R  ***********************************************************************************
 
 
-                    // DOCUMENT TITLE
-
-                    Paint footer_paint = new Paint();
-                    footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
-                    footer_paint.setTextAlign(Paint.Align.CENTER);
-                    footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-                    footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
-                    page_1_canvas.drawText(company_info.getCompany_data(), width_center, (float) (A4_HEIGHT - 35), footer_paint);
-                    page_1_canvas.drawText(company_info.getCompany_address() + " - " + company_info.getCompany_PIVA() + " - " + company_info.getCompany_number(), width_center, (float) (A4_HEIGHT - 15), footer_paint);
-
-
-
-
+                    boolean justOnePage;
+                    if (marker_list.size()<2){
+                        justOnePage =true;
+                    }else {
+                        justOnePage=false;
+                    }
+                    addFooter(page_1_canvas, width_center, company_info, justOnePage);
                     //*************************************************************** E N D  F O O T E R  ***********************************************************************************
 
                     document.finishPage(page_1);
+
                 }
 
 
@@ -1245,7 +1206,7 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
                     String userID = user.getUid();
                     Log.d(TAG, "onSuccess: genero un'istanza sul cloud con nome: "+userID+"/"+file.getName());
                     StorageReference documentReference = storageRef.child(userID+"/"+file.getName());
-
+                    //  COMMENTATO PER TEST 1250
                     UploadTask taskPdfUpload = documentReference.putFile(Uri.fromFile(file));
                     // Register observers to listen for when the download is done or if it fails
                     taskPdfUpload.addOnFailureListener(new OnFailureListener() {
@@ -1300,6 +1261,53 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         });
 
 
+    }
+
+    public void addFooter(Canvas pageToAddFooter, Integer pageCenter, CompanyInfo companyInfo, boolean signature){
+        Log.d(TAG, "addFooter .--.........................................---...--.-   : signature? "+signature);
+
+        Paint footer_paint = new Paint();
+        footer_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+        footer_paint.setTextAlign(Paint.Align.CENTER);
+        footer_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        footer_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_footer));
+
+        Paint table_paint = new Paint();
+        table_paint.setColor(ContextCompat.getColor(context, R.color.black));
+        table_paint.setStrokeWidth(3);
+        table_paint.setStyle(Paint.Style.STROKE);
+
+        pageToAddFooter.drawText(companyInfo.getCompany_data(), pageCenter, (float) (A4_HEIGHT-35), footer_paint);
+        pageToAddFooter.drawText(companyInfo.getCompany_address() +" - "+companyInfo.getCompany_PIVA() +" - "+companyInfo.getCompany_number() , pageCenter, (float) (A4_HEIGHT-15), footer_paint);
+
+        //  S I G N A T U R E
+        if (signature){
+            ContextWrapper cw = new ContextWrapper(getApplicationContext());
+            File directory = cw.getDir("signature", Context.MODE_PRIVATE);
+            //String path = Environment.getExternalStorageDirectory().toString()+"/app_signature";
+            File newfile = new File(directory, "signature_cropped"+".jpg");
+            try {
+                Bitmap bitmap_signature = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.fromFile(newfile));
+
+                double sign_left = A4_WIDTH-bitmap_signature.getWidth()-2;
+                double sign_top = A4_HEIGHT - bitmap_signature.getHeight()-2;
+
+                Paint signature_paint = new Paint();
+                signature_paint.setColor(ContextCompat.getColor(context, R.color.background_dark));
+                signature_paint.setTextAlign(Paint.Align.LEFT);
+                signature_paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+                signature_paint.setTextSize((int) getResources().getDimension(R.dimen.dimens_text_signature));
+
+                pageToAddFooter.drawBitmap(bitmap_signature, Math.round(sign_left),(float) sign_top, new Paint());
+                pageToAddFooter.drawRect(new Rect((int) Math.round(sign_left), (int) Math.round(sign_top)-2,(int) Math.round(sign_left+bitmap_signature.getWidth()+2),(int) Math.round(sign_top+bitmap_signature.getHeight()+2)), table_paint);
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                String userSignature = user.getUid().substring(0,6).toUpperCase()+getCurrentDate().replace(".","").replace("-","");
+
+                pageToAddFooter.drawText(userSignature, (int) Math.round(sign_left), (float) (sign_top-10), signature_paint);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Bitmap scaleCenterCrop(Bitmap source, int newHeight, int newWidth) {
