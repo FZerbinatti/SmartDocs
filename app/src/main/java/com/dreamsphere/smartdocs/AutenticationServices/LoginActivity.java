@@ -84,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                String email = login_email.getText().toString();
+                String email = login_email.getText().toString().trim();
                 String password = login_password.getText().toString();
                 //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 

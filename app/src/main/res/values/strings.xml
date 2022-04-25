@@ -44,7 +44,7 @@
     <string name="incorrect_password">Le password Inserite non corrispondono!</string>
     <string name="password_short">La password deve contenere almeno 6 caratteri!</string>
     <string name="invalid_email">Inserisci un account email valido!</string>
-    <string name="email_not_whitelisted">La tua email non risulta inserita nalla Whitelist aziendale, contatta il tuo referente per farla aggiungere alla Whitelist</string>
+    <string name="email_not_whitelisted">La tua email non risulta inserita nalla Whitelist aziendale, contatta il tuo referente per farla aggiungere alla Whitelist o contatta dreamspherestudio@gmail.com</string>
     <string name="user_registerd">Utente generato correttamente, verrai portato al Login</string>
     <string name="user_registration_fail">Errore di registrazione lato server</string>
     <string name="nuovo_utente_pool">Nuova Pool di Utenti</string>
@@ -57,7 +57,7 @@
     <string name="project_list">Lista Progetti</string>
     <string name="nome_progetto">Nome Progetto</string>
     <string name="preferences_user_company">user_company</string>
-    <string name="nuovo_documento">Nuovo Docuemnto Aziendale</string>
+    <string name="nuovo_documento">Nuovo Documento Aziendale</string>
     <string name="document_type">Tipologia Documento</string>
     <string name="nod_doc_or_type">No document name or Docuemtn type inserted</string>
     <string name="scegli_documento">Scegli Documento</string>
@@ -78,6 +78,7 @@
     <string name="app_logout">Logout App</string>
     <string name="generate_pdf">Crea PDF</string>
     <string name="salva_su_cloud">Salva su Cloud</string>
+    <string name="new_document">New Document</string>
 
 
 </resources>

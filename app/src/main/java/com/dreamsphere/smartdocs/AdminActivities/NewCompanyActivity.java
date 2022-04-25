@@ -49,16 +49,15 @@ public class NewCompanyActivity extends AppCompatActivity {
                 Log.d(TAG, "onClick: firebaseUser: "+firebaseUser);
 
                 //Inserisci il nome dell'azienda nel rack delle aziende
-                FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
+                /*FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_whitelist))
                         .child(company_name)
-                        .child(getString(R.string.firebase_whitelist))
-                        .setValue(" ");
+                        .child(getString(R.string.firebase_company_whitelist))
+                        .setValue(" ");*/
 
                 //crea nel database un'istanza di azienda vuota      public Company(String company_whitelist, CompanyInfo company_info, ArrayList<Document> company_documents) {
-                Company company = new Company(" " , new CompanyInfo(company_name," "," "," "," "," "," "), new ArrayList<Document>());
+                Company company = new Company(new CompanyInfo(company_name," "," "," "," "," "," "), new ArrayList<Document>());
                 FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
                         .child(company_name)
-                        .child(getString(R.string.firebase_company_info))
                         .setValue(company).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

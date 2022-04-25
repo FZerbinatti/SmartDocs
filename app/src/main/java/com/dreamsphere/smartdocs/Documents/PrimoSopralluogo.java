@@ -818,15 +818,15 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
         create_pdf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "onClick: loading company info for company: "+company_name);
-                loadCompanyInfo(company_name);
+                Log.d(TAG, "onClick: loading company info for company: "+user_company);
+                loadCompanyInfo(user_company);
             }
         });
     }
 
     private void loadCompanyInfo(String company_name) {
-
-        company_name= "DreamSphereStudio";
+        Log.d(TAG, "loadCompanyInfo: "+company_name);
+        //company_name= "DreamSphereStudio";
 
         DatabaseReference datareference = FirebaseDatabase.getInstance().getReference(getString(R.string.firebase_Companies))
                 .child(company_name)
@@ -910,7 +910,12 @@ public class PrimoSopralluogo extends AppCompatActivity implements View.OnLongCl
             public void onSuccess(byte[] bytes) {
                 Bitmap company_logo_bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
                 Log.d(TAG, "onSuccess: received logo: "+company_logo_bitmap);
-                Bitmap scaled_company_logo = scaleCenterCrop(company_logo_bitmap, 150,150) ;
+                //Bitmap scaled_company_logo = scaleCenterCrop(company_logo_bitmap, 150,150) ;
+                company_logo_bitmap= company_logo_bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                double logo_scale = (float) (150.0f / company_logo_bitmap.getHeight());
+                int logo_scaled_width =(int) Math.round(company_logo_bitmap.getWidth()*logo_scale);
+                Bitmap scaled_company_logo = Bitmap.createScaledBitmap(company_logo_bitmap,logo_scaled_width, (int)150, false);
+
 
                 page_1_canvas.drawBitmap(scaled_company_logo,20,20, new Paint());
                 page_1_canvas.drawRect(new Rect(20,20,scaled_company_logo.getWidth()+20,scaled_company_logo.getHeight()+20),table_paint );

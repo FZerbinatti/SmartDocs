@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/simplex"
-        android:text="@string/new_user_pool"
+        android:text="@string/new_document"
         android:textColor="@color/y2"
         android:textSize="40sp"
         android:layout_marginTop="50dp"

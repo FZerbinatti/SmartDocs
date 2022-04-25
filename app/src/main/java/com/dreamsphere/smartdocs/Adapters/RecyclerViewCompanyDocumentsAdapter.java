@@ -81,7 +81,7 @@ public class RecyclerViewCompanyDocumentsAdapter extends RecyclerView.Adapter<Re
 
                     //se il documento_nome è uguale al nome Sicurstudio_primosopralluogo allora clicklistenr porta ad aprire quella classe
                     Log.d(TAG, "onClick: nome clicekd? "+document.getDocument_name());
-                    if (document.getDocument_name().equals("Primo Sopralluogo")){
+                    if (document.getDocument_name().equals("PrimoSopralluogo")){
                         Intent intent = new Intent(context, PrimoSopralluogo.class);
                         intent.putExtra(context.getString(R.string.extra_project_name),project_name);
                         intent.putExtra(context.getString(R.string.extra_user_company),document.getDocument_company());
